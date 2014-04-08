@@ -96,6 +96,11 @@ h1 {
     position: relative;
 }
 
+#error {
+    color: #34495E;
+    font-size: 20px;
+}
+
 </style>
     </head>
     <body>
@@ -129,7 +134,8 @@ h1 {
             All good, <span class="hostname"></span> seems not affected!
         </h3>
         <h3 class="bg-warning bleed bleed-error">
-            Uh-oh, something went wrong.
+            Uh-oh, something went wrong:
+            <code id="error"></code>
         </h3>
         <h3 class="bg-danger bleed bleed-vuln">
             <span class="hostname"></span> IS VULNERABLE.
@@ -185,6 +191,7 @@ $( "form" ).submit(function( event ) {
     } else if (data.code == 1) {
         $(".bleed-safe").show()
     } else {
+        $('#error').text(data.error);
         $(".bleed-error").show()
     }
   });
