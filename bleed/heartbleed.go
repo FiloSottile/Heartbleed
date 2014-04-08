@@ -9,7 +9,8 @@ import (
 	"time"
 )
 
-var ErrPayloadNotFound = errors.New("heartbleed: payload not found")
+var Safe = errors.New("heartbleed: no response or payload not found")
+var Timeout = errors.New("heartbleed: timeout")
 
 var padding = []byte("YELLOW SUBMARINE")
 
@@ -48,14 +49,13 @@ func heartbleedCheck(conn *tls.Conn, buf *bytes.Buffer, vuln chan bool) func([]b
 		} else {
 			vuln <- true
 		}
-		conn.Close()
 	}
 }
 
 func Heartbleed(host string, payload []byte) (out []byte, err error) {
 	conn, err := tls.Dial("tcp", host, &tls.Config{InsecureSkipVerify: true})
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	var vuln = make(chan bool, 1)
@@ -66,16 +66,29 @@ func Heartbleed(host string, payload []byte) (out []byte, err error) {
 		conn.Read(nil)
 	}()
 
+	go func() {
+		time.Sleep(3 * time.Second)
+		_, err = conn.Write([]byte("quit\n"))
+		conn.Read(nil)
+		vuln <- false
+	}()
+
 	select {
 	case status := <-vuln:
+		conn.Close()
 		if status {
 			out = buf.Bytes()
+			return out, nil // VULNERABLE
+		} else if err != nil {
 			return
 		} else {
-			err = ErrPayloadNotFound
+			err = Safe
 			return
 		}
-	case <-time.After(3 * time.Second):
-		return nil, ErrPayloadNotFound
+	case <-time.After(10 * time.Second):
+		err = Timeout
+		conn.Close()
+		return
 	}
+
 }

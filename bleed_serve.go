@@ -34,7 +34,7 @@ func bleedHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data, err := bleed.Heartbleed(string(host), PAYLOAD)
 	var rc int
-	if err == bleed.ErrPayloadNotFound {
+	if err == bleed.Safe {
 		rc = 1
 		data = []byte("")
 		log.Printf("%v - SAFE", host)
