@@ -1,5 +1,3 @@
-//+build skip
-
 package main
 
 import (
