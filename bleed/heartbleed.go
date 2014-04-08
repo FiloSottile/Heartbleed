@@ -8,6 +8,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"net"
 	"time"
+	"strings"
 )
 
 var Safe = errors.New("heartbleed: no response or payload not found")
@@ -54,6 +55,9 @@ func heartbleedCheck(conn *tls.Conn, buf *bytes.Buffer, vuln chan bool) func([]b
 }
 
 func Heartbleed(host string, payload []byte) (out []byte, err error) {
+	if strings.Index(host, ":") == -1 {
+		host = host + ":443"
+	}
 	net_conn, err := net.DialTimeout("tcp", host, 3*time.Second)
 	if err != nil {
 		return
