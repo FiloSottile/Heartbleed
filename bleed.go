@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/FiloSottile/Heartbleed/bleed"
+	bleed "github.com/FiloSottile/Heartbleed/bleed"
 	"log"
 	"os"
 )
