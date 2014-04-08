@@ -22,8 +22,9 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type result struct {
-	Code int    `json:"code"`
-	Data string `json:"data"`
+	Code  int    `json:"code"`
+	Data  string `json:"data"`
+	Error string `json:"error"`
 }
 
 func bleedHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,6 +35,7 @@ func bleedHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data, err := bleed.Heartbleed(string(host), PAYLOAD)
 	var rc int
+	var errS string
 	if err == bleed.Safe {
 		rc = 1
 		data = []byte("")
@@ -41,12 +43,13 @@ func bleedHandler(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		rc = 2
 		data = []byte("")
+		errS = err.Error()
 		log.Printf("%v - ERROR", host)
 	} else {
 		rc = 0
 		log.Printf("%v - VULNERABLE", host)
 	}
-	res := result{rc, string(data)}
+	res := result{rc, string(data), errS}
 	j, err := json.Marshal(res)
 	if err != nil {
 		log.Println("ERROR", err)
