@@ -32,11 +32,8 @@ func bleedHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	host := r.URL.Path[len("/bleed/"):]
 	u, err := url.Parse(host)
-	if err == nil {
+	if err == nil && u.Host != "" {
 		host = u.Host
-	}
-	if strings.Index(host, ":") == -1 {
-		host = host + ":443"
 	}
 	data, err := bleed.Heartbleed(string(host), PAYLOAD)
 	var rc int
