@@ -150,6 +150,7 @@ $( "form" ).submit(function( event ) {
     console.log(data);
     $(".bleed").hide()
     $('.hostname').text(host);
+    window.location.hash = host;
     if (data.code == 0){
         $('#data').text(data.data);
         $(".bleed-vuln").show()
@@ -161,6 +162,11 @@ $( "form" ).submit(function( event ) {
   });
   event.preventDefault();
 });
+
+if (window.location.hash != "#" && window.location.hash != "") {
+    $( "input:first" ).val(window.location.hash.substr(1));
+    $( "form" ).submit();
+}
 </script>
     </body>
 </html>
