@@ -55,34 +55,10 @@ body {
     margin-right: -200px;
 }
 
-#hostname {
-    width: 500px;
-    height: 80px;
-    font-size: 35px;
-}
-#go {
-    font-size: 35px;
-    height: 80px;
-}
-
-#data {
-    color: #DA0A0A;
-    background-color: #34496E;
-    padding-left: 20px;
-}
 
 h3 {
     padding: 10px;
     text-align: center;
-}
-
-.bleed {
-    display: none;
-}
-
-.banner {
-    font-size:25px;
-    line-height: 40px;
 }
 
 </style>
@@ -95,44 +71,21 @@ h3 {
             <div class="page-header">
             <img class="heart" src="images/heartbleed.png">
                 <h1>
-                    Heartbleed test
+                    Heartbleed test - FAQ/status
                 </h1>
             </div>
-            <h3 class="bg-danger banner">
-                There are load (?) issues causing FALSE POSITIVES.<br>
-                Please read <a href="/faq.html#loadissue">the FAQ</a>
-            </h3>
-            <p class="lead">
-                Enter the hostname of a server to test it for CVE-2014-0160.
-            </p>
+
+            <h3><a name="loadissue">Load issues - fix in progress</h3></a>
             <p>
-            <form class="form-inline" role="form">
-              <div class="form-group">
-                <input type="text" class="form-control" id="hostname" placeholder="example.com[:443]">
-              </div>
-              <button type="submit" class="btn btn-primary btn-lg" id="go">Go!</button>
-            </form>
-        </p>
-        <h3 class="bg-success bleed bleed-safe">
-            All good, <span class="hostname"></span> seems not affected!
-        </h3>
-        <h3 class="bg-warning bleed bleed-error">
-            Uh-oh, something went wrong.
-        </h3>
-        <h3 class="bg-danger bleed bleed-vuln">
-            <span class="hostname"></span> IS VULNERABLE.
-        </h3>
-        <p class="bleed bleed-vuln">
-            Here is some data we pulled from the server memory:</br>
-            (we put <code>YELLOW SUBMARINE</code> there, and it should not have come back)
-        </p>
-        <pre id="data" class="bleed bleed-vuln"></pre>
-        <p class="bleed bleed-vuln">
-            Please <strong><a href="http://heartbleed.com/">take immediate action</a></strong>!
-        </p>
-            <p>
-                Go <a href="http://heartbleed.com/">here</a> for all your Heartbleed information needs.
+                Load issues (probably) caused many connections to the tested servers to fail randomly and report a <strong>FALSE POSITIVE</strong>.
+            <p></p>
+                Repeated tests will finally yield a red. The red result takes precedence over all the others and is certain. You are given a sample of live server memory as proof.
+            <p></p>
+                I'm very sorry about this happening. I'm spinning up more machines for a quick fix, and then rewriting the test to give only positive green.
+            <p></p>
+                Meanwhile you can use the <a href="https://github.com/FiloSottile/Heartbleed">command line tool</a> that is completely unaffected.
             </p>
+
         </div>
         <div id="footer">
             <div class="container">
@@ -155,34 +108,6 @@ h3 {
 </script><script src="js/flatui-radio.js" type="text/javascript">
 </script><script src="js/jquery.tagsinput.js" type="text/javascript">
 </script><script src="js/jquery.placeholder.js" type="text/javascript">
-</script><script src="js/nprogress.js" type="text/javascript">
-</script>
-<script type="text/javascript">
-$( "form" ).submit(function( event ) {
-  var host = $( "input:first" ).val();
-    $(".bleed").hide()
-    NProgress.start();
-  $.getJSON( "http://bleed-1161785939.us-east-1.elb.amazonaws.com/bleed/"+host, function( data ) {
-    NProgress.done();
-    // console.log(data);
-    $('.hostname').text(host);
-    window.location.hash = host;
-    if (data.code == 0){
-        $('#data').text(data.data);
-        $(".bleed-vuln").show()
-    } else if (data.code == 1) {
-        $(".bleed-safe").show()
-    } else {
-        $(".bleed-error").show()
-    }
-  });
-  event.preventDefault();
-});
-
-if (window.location.hash != "#" && window.location.hash != "") {
-    $( "input:first" ).val(window.location.hash.substr(1));
-    $( "form" ).submit();
-}
 </script>
     </body>
 </html>
