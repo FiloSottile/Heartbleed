@@ -1,8 +1,9 @@
 package main
 
 import (
-	bleed "github.com/FiloSottile/Heartbleed/bleed"
+	"flag"
 	"fmt"
+	bleed "github.com/FiloSottile/Heartbleed/bleed"
 	"log"
 	"net/url"
 	"os"
@@ -23,26 +24,32 @@ func usage(progname string) {
 }
 
 func main() {
-	args := os.Args
-	if len(args) < 2 {
-		usage(args[0])
+	var tgt bleed.Target
+
+	flag.StringVar(&tgt.StartTls, "starttls", "", "use STARTTLS")
+	flag.Parse()
+
+	if flag.NArg() < 1 {
+		usage(os.Args[0])
 	}
 
-	host := args[1]
-	u, err := url.Parse(host)
+	tgt.HostIp = flag.Arg(0)
+
+	u, err := url.Parse(tgt.HostIp)
 	if err == nil && u.Host != "" {
-		host = u.Host
+		tgt.HostIp = u.Host
 	}
-	out, err := bleed.Heartbleed(host, []byte("heartbleed.filippo.io"))
+
+	out, err := bleed.Heartbleed(&tgt, []byte("heartbleed.filippo.io"))
 	if err == bleed.Safe {
-		log.Printf("%v - SAFE", host)
+		log.Printf("%v - SAFE", tgt.HostIp)
 		os.Exit(0)
 	} else if err != nil {
-		log.Printf("%v - ERROR: %v", host, err)
+		log.Printf("%v - ERROR: %v", tgt.HostIp, err)
 		os.Exit(2)
 	} else {
 		log.Printf("%v\n", string(out))
-		log.Printf("%v - VULNERABLE", host)
+		log.Printf("%v - VULNERABLE", tgt.HostIp)
 		os.Exit(1)
 	}
 }
