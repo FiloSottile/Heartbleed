@@ -8,6 +8,13 @@ import (
 	"strings"
 )
 
+var Services = []string{
+	"ftp",
+	"smtp",
+	"pop3",
+	"imap",
+}
+
 type LineProtoTriple struct {
 	GreetMatch    string
 	AuthReq       string
