@@ -1,6 +1,7 @@
 import web
 import subprocess as sp
 import json
+from urlparse import urlparse
 
 urls = (
     '/bleed/(.*)', 'bleed',
@@ -20,6 +21,8 @@ class test:
 class bleed:
     def GET(self, host):
         web.header('Access-Control-Allow-Origin', '*')
+
+        parsed_host = urlparse(host).hostname or host
         if not ':' in host: host += ':443'
 
         child = sp.Popen(['./heartbleed', host], stdout=sp.PIPE)
