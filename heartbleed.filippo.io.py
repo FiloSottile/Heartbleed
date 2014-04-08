@@ -14,6 +14,7 @@ class hello:
 
 class bleed:
     def GET(self, host):
+        web.header('Access-Control-Allow-Origin', '*')
         if not ':' in host: host += ':443'
 
         child = sp.Popen(['heartbleed', host], stdout=sp.PIPE)
