@@ -48,8 +48,9 @@ func bleedHandler(w http.ResponseWriter, r *http.Request) {
 	j, err := json.Marshal(res)
 	if err != nil {
 		log.Println("ERROR", err)
+	} else {
+		w.Write(j)
 	}
-	w.Write(j)
 }
 
 func main() {
