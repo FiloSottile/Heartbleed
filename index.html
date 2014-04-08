@@ -150,7 +150,7 @@ $( "form" ).submit(function( event ) {
   var host = $( "input:first" ).val();
     $(".bleed").hide()
     NProgress.start();
-  $.getJSON( "http://heartbleed.filippo.io/bleed/"+host, function( data ) {
+  $.getJSON( "http://54.83.203.157/bleed/"+host, function( data ) {
     NProgress.done();
     // console.log(data);
     $('.hostname').text(host);
