@@ -59,5 +59,8 @@ func main() {
 	http.HandleFunc("/", defaultHandler)
 	http.HandleFunc("/test", testHandler)
 	http.HandleFunc("/bleed/", bleedHandler)
-	http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":80", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
