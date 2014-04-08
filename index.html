@@ -115,9 +115,9 @@ h1 {
                     Heartbleed test
                 </h1>
             </div>
-            <h3 class="bg-danger banner">
-                There are load (?) issues causing FALSE NEGATIVES.<br>
-                Please read <a href="faq.html#loadissue">the FAQ</a>
+            <h3 class="bg-info banner">
+                There should not be false results anymore, only "Uh-Oh"s.<br>
+                If there are problems, head to the <a href="faq.html">FAQ</a>
             </h3>
             <p class="lead">
                 Enter the hostname of a server to test it for CVE-2014-0160.
@@ -177,23 +177,25 @@ h1 {
 </script>
 <script type="text/javascript">
 $( "form" ).submit(function( event ) {
+    $('button').attr('disabled', 'disabled');
   var host = $( "input:first" ).val();
     $(".bleed").hide()
     NProgress.start();
-  $.getJSON( "http://bleed-1161785939.us-east-1.elb.amazonaws.com/bleed/"+host, function( data ) {
-    NProgress.done();
-    // console.log(data);
-    $('.hostname').text(host);
-    window.location.hash = host;
-    if (data.code == 0){
-        $('#data').text(data.data);
-        $(".bleed-vuln").show()
-    } else if (data.code == 1) {
-        $(".bleed-safe").show()
-    } else {
-        $('#error').text(data.error);
-        $(".bleed-error").show()
-    }
+    $.getJSON( "http://bleed-1161785939.us-east-1.elb.amazonaws.com/bleed/"+host, function( data ) {
+        $('button').removeAttr('disabled')
+        NProgress.done();
+        // console.log(data);
+        $('.hostname').text(host);
+        window.location.hash = host;
+        if (data.code == 0){
+            $('#data').text(data.data);
+            $(".bleed-vuln").show()
+        } else if (data.code == 1) {
+            $(".bleed-safe").show()
+        } else {
+            $('#error').text(data.error);
+            $(".bleed-error").show()
+        }
   });
   event.preventDefault();
 });
