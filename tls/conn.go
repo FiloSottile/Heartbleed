@@ -694,8 +694,8 @@ func (c *Conn) sendAlert(err alert) error {
 var heartbeatCallback func(data []byte)
 
 func (c *Conn) SendHeartbeat(data []byte, callback func(data []byte)) error {
-	_, err := c.writeRecord(recordTypeHeartbeat, data)
 	heartbeatCallback = callback
+	_, err := c.writeRecord(recordTypeHeartbeat, data)
 	return err
 }
 
