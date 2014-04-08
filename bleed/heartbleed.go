@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+type Target struct {
+	HostIp   string
+	StartTls string
+}
+
 var Safe = errors.New("heartbleed: no response or payload not found")
 var Timeout = errors.New("heartbleed: timeout")
 
@@ -53,12 +58,22 @@ func heartbleedCheck(conn *tls.Conn, buf *bytes.Buffer, vuln chan bool) func([]b
 	}
 }
 
-func Heartbleed(host string, payload []byte) (out []byte, err error) {
+func Heartbleed(tgt *Target, payload []byte) (out []byte, err error) {
+	host := tgt.HostIp
+
 	net_conn, err := net.DialTimeout("tcp", host, 3*time.Second)
 	if err != nil {
 		return
 	}
 	net_conn.SetDeadline(time.Now().Add(9 * time.Second))
+
+	if tgt.StartTls != "" {
+		err = DoStartTLS(net_conn, tgt.StartTls)
+		if err != nil {
+			return
+		}
+	}
+
 	conn := tls.Client(net_conn, &tls.Config{InsecureSkipVerify: true})
 	err = conn.Handshake()
 	if err != nil {
