@@ -6,4 +6,4 @@
     sudo: yes
     ignore_errors: yes
   - command: >
-      screen -d -m -- sudo ./heartbleed | tee -a heartbleed.log 2>&1
+      screen -d -m -- bash -c "sudo ./heartbleed 2>&1 | tee -a ./heartbleed.log"
