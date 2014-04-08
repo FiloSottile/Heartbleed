@@ -33,7 +33,11 @@ func bleedHandler(w http.ResponseWriter, r *http.Request) {
 	if strings.Index(host, ":") == -1 {
 		host = host + ":443"
 	}
-	data, err := bleed.Heartbleed(string(host), PAYLOAD)
+
+	tgt := bleed.Target{
+		HostIp: string(host),
+	}
+	data, err := bleed.Heartbleed(&tgt, PAYLOAD)
 	var rc int
 	var errS string
 	if err == bleed.Safe {
