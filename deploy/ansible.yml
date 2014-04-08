@@ -1,0 +1,14 @@
+- hosts: bleed
+  remote_user: ubuntu
+  sudo: yes
+  tasks:
+  - apt: pkg=daemontools update_cache=yes cache_valid_time=3600
+  - apt: pkg=daemontools-run update_cache=yes cache_valid_time=3600
+  - file: path=/etc/service/bleed state=directory
+  - file: path=/etc/service/bleed/supervise/ state=directory
+  - copy: src=run.sh dest=/etc/service/bleed/run mode=0755
+  - copy: src=heartbleed dest=/home/ubuntu/heartbleed
+  - command: pkill -f heartbleed
+    ignore_errors: yes
+  - service: name=svscan state=started
+  - command: svc -u /etc/service/bleed

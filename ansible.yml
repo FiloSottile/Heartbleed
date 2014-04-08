@@ -1,9 +1,0 @@
-- hosts: bleed
-  remote_user: ubuntu
-  tasks:
-  - copy: src=heartbleed dest=/home/ubuntu/heartbleed
-  - command: pkill -f heartbleed
-    sudo: yes
-    ignore_errors: yes
-  - command: >
-      screen -d -m -- bash -c "sudo ./heartbleed 2>&1 | tee -a ./heartbleed.log"
