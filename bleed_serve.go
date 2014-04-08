@@ -21,7 +21,7 @@ func testHandler(w http.ResponseWriter, r *http.Request) {
 
 type result struct {
 	Code int    `json:"code"`
-	Data []byte `json:"data"`
+	Data string `json:"data"`
 }
 
 func bleedHandler(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +44,7 @@ func bleedHandler(w http.ResponseWriter, r *http.Request) {
 		rc = 0
 		log.Printf("%v - VULNERABLE", host)
 	}
-	res := result{rc, data}
+	res := result{rc, string(data)}
 	j, err := json.Marshal(res)
 	if err != nil {
 		log.Println("ERROR", err)
