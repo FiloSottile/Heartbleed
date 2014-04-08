@@ -109,11 +109,11 @@ h3 {
                 <ul><li>
                   if the error below is a <code>timeout</code> then my servers are under too heavy load, probably
                 </li><li>
+                  some firewall might be so smart to block us (probably the <code>broken pipe</code> errors)
+                </li><li>
                   <code>tls: oversized record received with length 20291</code> means that the service uses STARTLS and <a href="https://github.com/FiloSottile/Heartbleed/issues/14">I still need to implement it</a>
                 </li><li>
                   the server might not exist (check spelling) or not being online on that port
-                </li><li>
-                  some firewall might be so smart to block us
                 </li><li>
                   there might simply be a bug in my site
                 </li></ul>
