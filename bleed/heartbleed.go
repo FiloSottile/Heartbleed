@@ -53,7 +53,7 @@ func heartbleedCheck(conn *tls.Conn, payload []byte, buf *bytes.Buffer, vuln cha
 func Heartbleed(host string, payload []byte) (out []byte, err error) {
 	conn, err := tls.Dial("tcp", host, &tls.Config{InsecureSkipVerify: true})
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	var vuln = make(chan bool, 1)
