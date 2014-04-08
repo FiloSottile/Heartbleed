@@ -80,7 +80,7 @@ func Heartbleed(host string, payload []byte) (out []byte, err error) {
 	go func() {
 		time.Sleep(3 * time.Second)
 		_, err = conn.Write([]byte("quit\n"))
-		conn.Read(nil) // TODO: here we should probably chack that it succeed
+		conn.Read(nil) // TODO: here we should probably check that it succeeds
 		vuln <- false
 	}()
 
