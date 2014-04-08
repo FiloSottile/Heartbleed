@@ -33,7 +33,7 @@ func bleedHandler(w http.ResponseWriter, r *http.Request) {
 	host := r.URL.Path[len("/bleed/"):]
 	u, err := url.Parse(host)
 	if err == nil {
-		host := u.Host
+		host = u.Host
 	}
 	if strings.Index(host, ":") == -1 {
 		host = host + ":443"
