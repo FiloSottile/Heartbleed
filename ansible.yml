@@ -1,0 +1,15 @@
+- hosts: bleed
+  remote_user: ubuntu
+  tasks:
+  - apt: pkg=python-pip state=present update_cache=yes cache_valid_time=3600
+    sudo: yes
+  - pip: name=web.py
+    sudo: yes
+  - copy: src=heartbleed dest=/home/ubuntu/heartbleed
+  - copy: src=heartbleed.py dest=/home/ubuntu/heartbleed.py
+  - shell: >
+      kill $(pgrep -f heartbleed.py)
+    sudo: yes
+    ignore_errors: yes
+  - command: >
+      screen -d -m -- sudo python ./heartbleed.py 80 | tee -a log 2>&1
