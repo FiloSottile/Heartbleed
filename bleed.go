@@ -2,13 +2,33 @@ package main
 
 import (
 	bleed "github.com/FiloSottile/Heartbleed/bleed"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
 )
 
+var usageMessage = `This is a tool for detecting OpenSSL Heartbleed vulnerability (CVE-2014-0160).
+
+Usage:
+
+	%s server_name(:port)
+	
+	The default port is 443 (HTTPS).
+`
+
+func usage(progname string) {
+	fmt.Fprintf(os.Stderr, usageMessage, progname)
+	os.Exit(2)
+}
+
 func main() {
-	host := os.Args[1]
+	args := os.Args
+	if len(args) < 2 {
+		usage(args[0])
+	}
+
+	host := args[1]
 	u, err := url.Parse(host)
 	if err == nil && u.Host != "" {
 		host = u.Host
