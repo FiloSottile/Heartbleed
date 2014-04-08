@@ -140,7 +140,11 @@ h3 {
             <h3><a name="source" href="#test">Hey I need to test something, a vulnerable machine?</h3></a>
             <p>
                 Be my guest: <code>ec2-54-81-196-192.compute-1.amazonaws.com:4433</code>. Don't be evil ;)
-            </p>
+            </p><p>
+                So you guys knocked down this too. I'll publish an AMI, meanwhile this will open up port 4433 (make sure to have a vulnerable openssl, latest Ubuntu EC2 is fine)
+            </p><pre>
+openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout mycert.pem -out mycert.pem
+openssl s_server -cert mycert.pem -www</pre>
 
             <h3><a name="report" href="#report">My issue is not answered here :(</h3></a>
             <p>
