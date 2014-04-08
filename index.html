@@ -8,6 +8,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- Loading Bootstrap -->
         <link href="bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css"><!-- Loading Flat UI -->
         <link href="css/flat-ui.css" rel="stylesheet" type="text/css">
+        <link href="css/nprogress.css" rel="stylesheet" type="text/css">
         <link rel="shortcut icon" href="favicon.png"><!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
         <!--[if lt IE 9]>
       <script src="js/html5shiv.js"></script>
@@ -142,13 +143,16 @@ h3 {
 </script><script src="js/flatui-radio.js" type="text/javascript">
 </script><script src="js/jquery.tagsinput.js" type="text/javascript">
 </script><script src="js/jquery.placeholder.js" type="text/javascript">
+</script><script src="js/nprogress.js" type="text/javascript">
 </script>
 <script type="text/javascript">
 $( "form" ).submit(function( event ) {
   var host = $( "input:first" ).val();
-  $.getJSON( "http://heartbleed.filippo.io/bleed/"+host, function( data ) {
-    console.log(data);
     $(".bleed").hide()
+    NProgress.start();
+  $.getJSON( "http://heartbleed.filippo.io/bleed/"+host, function( data ) {
+    NProgress.done();
+    // console.log(data);
     $('.hostname').text(host);
     window.location.hash = host;
     if (data.code == 0){
