@@ -42,7 +42,7 @@ func (proto *LineProtoTriple) do(w *bufio.Writer, r *bufio.Reader) (err error) {
 
 	re = regexp.MustCompile(proto.ResponseMatch)
 	if !re.MatchString(line) {
-		return errors.New("Server does not support STARTTLS (" + strings.TrimSpace(line))
+		return errors.New("Server does not support STARTTLS (" + strings.TrimSpace(line) + ")")
 	}
 
 	return
