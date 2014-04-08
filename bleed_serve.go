@@ -8,6 +8,7 @@ import (
 	bleed "github.com/FiloSottile/Heartbleed/bleed"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -30,6 +31,10 @@ type result struct {
 func bleedHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	host := r.URL.Path[len("/bleed/"):]
+	u, err := url.Parse(host)
+	if err == nil {
+		host = u.Host
+	}
 	if strings.Index(host, ":") == -1 {
 		host = host + ":443"
 	}
