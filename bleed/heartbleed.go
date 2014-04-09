@@ -13,7 +13,7 @@ import (
 
 type Target struct {
 	HostIp   string
-	StartTls string
+	Service string
 }
 
 var Safe = errors.New("heartbleed: no response or payload not found")
@@ -71,8 +71,8 @@ func Heartbleed(tgt *Target, payload []byte) (out []byte, err error) {
 	}
 	net_conn.SetDeadline(time.Now().Add(9 * time.Second))
 
-	if tgt.StartTls != "" {
-		err = DoStartTLS(net_conn, tgt.StartTls)
+	if tgt.Service != "https" {
+		err = DoStartTLS(net_conn, tgt.Service)
 		if err != nil {
 			return
 		}
