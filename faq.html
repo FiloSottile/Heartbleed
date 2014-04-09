@@ -125,6 +125,24 @@ h3 {
               <a href="https://chrome.google.com/webstore/detail/chromebleed/eeoekjnjgppnaegdjbcafdggilajhpic">Chromebleed</a>
             </p>
 
+            <h3><a name="chrome" href="#sure">I have patched my server but result is still red?!</h3></a>
+            <p>
+              If you are getting consistent reds (3 or more in a row, if you see just one it MIGHT be <a href="#falsepositive">a glitch</a>) I'm 100% certain that the host you are passing me is vulnerable, and it is now. <a href="#caching">No, I don't cache anything.</a>
+            </p><p>
+                Common causes include (got them from Twitter, mail or <a href="https://github.com/FiloSottile/Heartbleed/issues/6">here</a>)
+                <ul><li>
+                  not restarting the right processes after updating
+                </li><li>
+                  Load Balancers in front of your site
+                </li><li>
+                  updating only <code>openssl</code> and not <code>libssl</code>
+                </li><li>
+                  <code>mod_spdy</code>, it uses a backported OpenSSL
+                </li><li>
+                  static binaries
+                </li></ul>
+            </p>
+
             <h3><a name="caching" href="#caching">Hey, this red was fast, are you caching results?</h3></a>
             <p>
                 No, there are no caches other than the one of your browser, and that should not be involved. Getting a red is simply a really quick process.
