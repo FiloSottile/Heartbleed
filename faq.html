@@ -107,9 +107,9 @@ h3 {
             <p>
                 This error means that I can't tell if the server is vulnerable. This might be because:
                 <ul><li>
-                  <strike>if the error below is a <code>timeout</code> then my servers are under too heavy load, probably</strike>
-                </li><li>
                   <code>broken pipe</code>, <code>connection reset by peer</code> and <code>timeout</code> errors are rising now, they are probably counter-measures, firewalls and IPS closing the connection or sink-holing it when they detect a heartbeat
+                </li><li>
+                  <code>broken pipe</code> is apparently also caused by the unaffected IIS server
                 </li><li>
                   <code>timeout</code> is apparently also caused by patched servers that don't respond to or "quit" message. This happens with a patched server, but is not a green since the same behavior might be caused by my servers being overloaded, so I can't be sure.
                 </li><li>
@@ -118,6 +118,8 @@ h3 {
                   the server might not exist (check spelling) or not being online on that port, check in your browser (<code>connection refused</code>)
                 </li><li>
                   there might simply be a bug in my site
+                </li><li>
+                  <strike>if the error below is a <code>timeout</code> then my servers are under too heavy load, probably</strike>
                 </li></ul>
             </p>
 
