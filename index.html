@@ -127,18 +127,18 @@ h1 {
                 If there are problems, head to the <a href="faq.html">FAQ</a>
             </h3>
             <p class="lead">
-                Enter the hostname of a server to test it for CVE-2014-0160.
+                Enter a URL or a hostname to test the server for CVE-2014-0160.
             </p>
             <p>
             <form class="form-inline" role="form">
               <div class="form-group">
-                <input type="text" class="form-control" id="hostname" placeholder="example.com[:443]" autocapitalize="off" autocorrect="off">
+                <input type="text" class="form-control" id="hostname" placeholder="example.com" autocapitalize="off" autocorrect="off">
               </div>
               <button type="submit" class="btn btn-primary btn-lg" id="go">Go!</button>
             </form>
         </p>
         <h3 class="bg-success bleed bleed-safe">
-            All good, <span class="hostname"></span> seems safe!
+            All good, <span class="hostname"></span> seems fixed or unaffected!
         </h3>
         <h3 class="bg-warning bleed bleed-error">
             Uh-oh, something went wrong:
@@ -157,6 +157,9 @@ h1 {
         <p class="bleed bleed-vuln">
             Please <strong><a href="http://heartbleed.com/">take immediate action</a></strong>!
         </p>
+            <p>
+                You can specify a port like this <code>example.com:4433</code>. 443 by default.
+            </p>
             <p>
                 Go <a href="http://heartbleed.com/">here</a> for all your Heartbleed information needs.
             </p>
@@ -193,12 +196,14 @@ $( "form" ).submit(function( event ) {
   var host = $( "input:first" ).val();
     $(".bleed").hide()
     NProgress.start();
-    $.getJSON( "http://bleed-1161785939.us-east-1.elb.amazonaws.com/bleed/"+host, function( data ) {
+    $.getJSON( "http://bleed-1161785939.us-east-1.elb.amazonaws.com/bleed/query", {
+        u: host
+    }, function( data ) {
         $('button').removeAttr('disabled')
         NProgress.done();
         // console.log(data);
-        $('.hostname').text(host);
-        window.location.hash = host;
+        $('.hostname').text(data.host);
+        window.location.hash = data.host;
         if (data.code == 0){
             $('#data').text(data.data);
             $(".bleed-vuln").show()
