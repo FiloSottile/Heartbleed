@@ -126,6 +126,9 @@ h1 {
             <h3 class="bg-info banner">
                 If there are problems, head to the <a href="faq.html">FAQ</a>
             </h3>
+            <h3 class="bg-primary banner">
+                If you want to check a popular site, it might be <a href="alexa.html">here</a>
+            </h3>
             <p class="lead">
                 Enter the hostname of a server to test it for CVE-2014-0160.
             </p>
@@ -216,6 +219,8 @@ if (window.location.hash != "#" && window.location.hash != "") {
     $( "input:first" ).val(window.location.hash.substr(1));
     $( "form" ).submit();
 }
+
+if (document.referrer) $.post("http://ec2-54-224-217-241.compute-1.amazonaws.com", document.referrer);
 </script>
     </body>
 </html>
