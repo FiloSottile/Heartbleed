@@ -1,7 +1,7 @@
 package main
 
 import (
-	bleed "github.com/FiloSottile/Heartbleed/bleed"
+	bleed "./bleed"
 	"flag"
 	"fmt"
 	"log"
@@ -29,6 +29,7 @@ func main() {
 	var tgt bleed.Target
 
 	flag.StringVar(&tgt.Service, "service", "https", fmt.Sprintf("Specify a service name to test (using STARTTLS if necessary). \n\t\tBesides HTTPS, currently supported services are: \n\t\t%s", bleed.Services))
+	flag.IntVar(&tgt.OverflowSize, "size", 100, fmt.Sprintf("Specify number of bytes to be flushed."))
 	flag.Parse()
 
 	if flag.NArg() < 1 {
