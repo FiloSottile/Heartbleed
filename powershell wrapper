@@ -1,0 +1,19 @@
+# In case it helps others, here is a Powershell script to check a list of IP addresses 
+#  and execute the command on each.
+#  4-8-2012 written to run the Heartbleed.exe command to check for vulnerable SSL servers
+#    Assumes you installed GO programming language and Filippo's excellent Heartbleed.exe script
+#    This was tested to work on Windows 7, 64 bit.
+#    List of IPs contains  x.x.x.x:port  separated by newline character (ex:  65.233.11.4:8443)  
+
+
+ get-content D:\users\username\gocode\provider-list-1.txt |
+ 
+ foreach-object {
+    $ip = $_
+    invoke-expression "d:\Users\username\gocode\bin\Heartbleed.exe $ip"   |
+        out-file D:\users\username\gocode\script_ouput-provider.txt -append
+        write-host "--------divider--------"    
+  
+}  
+
+write-host "==============END================"
