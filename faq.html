@@ -111,6 +111,8 @@ h3 {
                 </li><li>
                   <code>broken pipe</code>, <code>connection reset by peer</code> and <code>timeout</code> errors are rising now, they are probably counter-measures, firewalls and IPS closing the connection or sink-holing it when they detect a heartbeat
                 </li><li>
+                  <code>timeout</code> is apparently also caused by patched servers that don't respond to or "quit" message. This happens with a patched server, but is not a green since the same behavior might be caused by my servers being overloaded, so I can't be sure.
+                </li><li>
                   <code>tls: oversized record received with length 20291</code> (and sometimes <code>EOF</code>) means that the service uses STARTLS and <a href="https://github.com/FiloSottile/Heartbleed/issues/14">I still need to implement it</a>. Use the <a href="https://github.com/FiloSottile/Heartbleed">command line tool</a> meanwhile, with <code>-starttls=ftp/imap/...</code>.
                 </li><li>
                   the server might not exist (check spelling) or not being online on that port, check in your browser (<code>connection refused</code>)
