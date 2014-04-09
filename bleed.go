@@ -14,6 +14,7 @@ var usageMessage = `This is a tool for detecting OpenSSL Heartbleed vulnerabilit
 Usage:  %s [flags] server_name[:port]
 
 The default port is 443 (HTTPS).
+If a URL is supplied in server_name, it will be parsed to extract the host, but not the protocol.
 
 The following flags are recognized:
 `
@@ -39,6 +40,9 @@ func main() {
 	u, err := url.Parse(tgt.HostIp)
 	if err == nil && u.Host != "" {
 		tgt.HostIp = u.Host
+		if u.Scheme != "" {
+			tgt.Service = u.Scheme
+		}
 	}
 
 	out, err := bleed.Heartbleed(&tgt, []byte("heartbleed.filippo.io"))

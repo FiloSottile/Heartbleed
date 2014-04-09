@@ -3,13 +3,12 @@
 package main
 
 import (
+	bleed "github.com/FiloSottile/Heartbleed/bleed"
 	"encoding/json"
 	"fmt"
-	bleed "github.com/FiloSottile/Heartbleed/bleed"
 	"log"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 var PAYLOAD = []byte("heartbleed.filippo.io")
@@ -38,6 +37,7 @@ func bleedHandler(w http.ResponseWriter, r *http.Request) {
 
 	tgt := bleed.Target{
 		HostIp: string(host),
+		Service: "https",
 	}
 	data, err := bleed.Heartbleed(&tgt, PAYLOAD)
 	var rc int

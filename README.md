@@ -5,11 +5,15 @@ A checker (site and tool) for CVE-2014-0160.
 
 Public site at http://filippo.io/Heartbleed/
 
-Tool usage: `Heartbleed example.com:443`
+Tool usage: `Heartbleed [-service="service_name"] example.com[:443]`
+        or: `Heartbleed service_name://example.com[:443]`
 
 Exit codes: `0` - SAFE; `1` - VULNERABLE; `2` - ERROR. (*recently changed*)
 
 Please note that the code is a bit of a mess, not exactly release-ready.
+
+If a service is specified besides `https`, the tool checks the specified service using STARTTLS.
+**You do still need to specify the correct port.**
 
 ## Install
 
