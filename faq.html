@@ -85,24 +85,6 @@ h3 {
                 My <a href="https://twitter.com/FiloSottile">Twitter feed</a> might be a good place to look for known issues.
             </p>
 
-            <h3><a name="falsenegative" href="#falsenegative">I'm getting false negatives (green)!</h3></a>
-            <p>
-                There used to be a bug that under load caused timeouts to be interpreted as greens. This should not be the case anymore.
-            </p><p>
-                If it's still the case please contact me <a href="https://twitter.com/FiloSottile">on Twitter</a> specifying the hostname and time.
-            </p>
-
-            <h3><a name="falsepositive" href="#falsepositive">I'm getting false positives (red)!</h3></a>
-            <p>
-                Be careful, unless you glitched the site hammering the button, there is no way I can think of a red is not a red.
-            </p><p>
-                Check the memory dump, if it's there then the tool got it from somewhere.
-            </p><p>
-                Let's say I'm 99% certain that you should look better if you restarted all processes after updating correctly.
-            </p><p>
-                <strong>Update:</strong> still, I'm getting consistently reports of unaffected versions going red. Please come comment to <a href="https://github.com/FiloSottile/Heartbleed/issues/6">the issue</a> if you are affected. I'm looking for 3 things: memory dumps (to figure out where they came from), timestamps (as accurate as possible, try with the Network tab), a complete description of what you clicked and typed.
-            </p>
-
             <h3><a name="wentwrong" href="#wentwrong">Uh-oh, something went wrong.<br>What went wrong?</h3></a>
             <p>
                 This error means that I can't tell if the server is vulnerable (probably not). This might be because:
@@ -155,6 +137,26 @@ h3 {
             <h3><a name="live" href="#live">Is this a live test? Is it a full exploit?</h3></a>
             <p>
                 Yes, when you hit the button I actually go to the site, send them a malformed heartbeat and extract ~80 bytes of memory as proof, just like an attacker would. I don't check versions or make assumptions, I look for the bug.
+            </p>
+
+            <h3><a name="falsenegative" href="#falsenegative">I'm getting false negatives (green)!</h3></a>
+            <p>
+                There used to be a bug that under load caused timeouts to be interpreted as greens. This should not be the case anymore.
+            </p><p>
+                If it's still the case please contact me <a href="https://twitter.com/FiloSottile">on Twitter</a> specifying the hostname and time.
+            </p>
+
+            <h3><a name="falsepositive" href="#falsepositive">I'm getting false positives (red)!</h3></a>
+            <p>
+                Be careful, unless you glitched the site hammering the button, there is no way I can think of a red is not a red.
+            </p><p>
+                Check the memory dump, if it's there then the tool got it from somewhere.
+            </p><p>
+                Let's say I'm 99% certain that you should look better if you restarted all processes after updating correctly.
+            </p><p>
+                <strong>Update:</strong> still, I'm getting consistently reports of unaffected versions going red <strong>for one, maybe two time(s) maximum, if it happens repeatedly the site IS vulnerable</strong>.
+            </p><p>
+                Please come comment to <a href="https://github.com/FiloSottile/Heartbleed/issues/6">the issue</a> if you are affected. I'm looking for 3 things: memory dumps (to figure out where they came from), timestamps (as accurate as possible, try with the Network tab), a complete description of what you clicked and typed.
             </p>
 
             <h3><a name="source" href="#source">Is source available? CLI?</h3></a>
