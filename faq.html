@@ -167,6 +167,8 @@ h3 {
             <h3><a name="logs" href="#logs">Can you release/show logs?</h3></a>
             <p>
                 I don't think this would be responsible. People are trusting me with bits of their infrastructure information, and I think many trust me not to disclose them. My plea is to release only anonymous aggregated information - for sites outside the Alexa top 1000 (because hey, I'm going to tell you if one of them took 24 hours to patch).
+            </p><p>
+                People are right wanting to know if a compromise happened for a site they use, and I'm trying to figure out how to responsibly meet this need. If you have opinions on this please ping me on Twitter.
             </p>
 
             <h3><a name="exploit" href="#exploit">How do I weaponize this?</h3></a>
@@ -181,6 +183,15 @@ h3 {
                 <script data-gittip-username="FiloSottile" data-gittip-widget="button" src="//gttp.co/v1.js"></script><br>
                 <a class="coinbase-button" data-code="b0b690c431f738f85fbbef8f860bd9e7" data-button-style="custom_small" href="https://coinbase.com/checkouts/b0b690c431f738f85fbbef8f860bd9e7">Donate Bitcoins</a><script src="https://coinbase.com/assets/button.js" type="text/javascript"></script><br>
                 <script id='fb1wlqo'>(function(i){var f,s=document.getElementById(i);f=document.createElement('iframe');f.src='//api.flattr.com/button/view/?uid=FiloSottile&button=compact&url=http%3A%2F%2Ffilippo.io%2FHeartbleed';f.title='Flattr';f.height=20;f.width=110;f.style.borderWidth=0;s.parentNode.insertBefore(f,s);})('fb1wlqo');</script>
+            </p>
+
+            <h3><a name="falsesense" href="#falsesense">Shouldn't you tell me also if the server changed their cert?</h3></a>
+            <p>
+              That's true. Unfortunately, there is no real way to check if a certificate have been re-keyed (a certificate can be re-keyed without dates being updated, and many CAs are doing this).
+            </p><p>
+              Moreover, the security risk of a patched server with a old cert is way lower, an attacker would need to be intercepting your traffic to take advantage of this. So I feel that the priority now is getting users to change passwords that might have been leaked to the world, not to a really skilled roommate, their malicious ISP or the NSA (these 3 being the few that can probably MiTM you).
+            </p><p>
+              It's site owners responsibility to tell users what was done to handle the issue and to tell them when to change their password. Also, <strong>site owners: please invalidate all users passwords and ask for them to be reset via email on first login, it's the responsible thing to do</strong>.
             </p>
 
             <h3><a name="test" href="#test">Hey I need to test something, a vulnerable machine?</h3></a>
