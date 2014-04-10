@@ -85,7 +85,7 @@ h3 {
                 My <a href="https://twitter.com/FiloSottile">Twitter feed</a> might be a good place to look for known issues.
             </p>
 
-            <h3><a name="wentwrong" href="#wentwrong">Uh-oh, something went wrong.<br>What went wrong?</h3></a>
+            <h3><a name="wentwrong" href="#wentwrong">Uh-oh, something went wrong.<br>What went wrong?</a></h3>
             <p>
                 This error means that I can't tell if the server is vulnerable (probably not). This might be because:
                 <ul><li>
@@ -105,13 +105,13 @@ h3 {
                 </li></ul>
             </p>
 
-            <h3><a name="chrome" href="#chrome">What about a Chrome extension?</h3></a>
+            <h3><a name="chrome" href="#chrome">What about a Chrome extension?</a></h3>
             <p>
               Here is it! by <a href="https://twitter.com/mightyshakerjnr">@mightyshakerjnr</a><br>
               <a href="https://chrome.google.com/webstore/detail/chromebleed/eeoekjnjgppnaegdjbcafdggilajhpic">Chromebleed</a>
             </p>
 
-            <h3><a name="sure" href="#sure">I have patched my server but result is still red?!</h3></a>
+            <h3><a name="sure" href="#sure">I have patched my server but result is still red?!</a></h3>
             <p>
               If you are getting consistent reds (3 or more in a row, if you see just one it MIGHT be <a href="#falsepositive">a glitch</a>) I'm 100% certain that the host you are passing me is vulnerable, and it is now. <a href="#caching">No, I don't cache anything.</a>
             </p><p>
@@ -131,24 +131,24 @@ h3 {
                 </li></ul>
             </p>
 
-            <h3><a name="caching" href="#caching">Hey, this red was fast, are you caching results?</h3></a>
+            <h3><a name="caching" href="#caching">Hey, this red was fast, are you caching results?</a></h3>
             <p>
                 No, there are no caches other than the one of your browser, and that should not be involved. Getting a red is simply a really quick process.
             </p>
 
-            <h3><a name="live" href="#live">Is this a live test? Is it a full exploit?</h3></a>
+            <h3><a name="live" href="#live">Is this a live test? Is it a full exploit?</a></h3>
             <p>
                 Yes, when you hit the button I actually go to the site, send them a malformed heartbeat and extract ~80 bytes of memory as proof, just like an attacker would. I don't check versions or make assumptions, I look for the bug.
             </p>
 
-            <h3><a name="falsenegative" href="#falsenegative">I'm getting false negatives (green)!</h3></a>
+            <h3><a name="falsenegative" href="#falsenegative">I'm getting false negatives (green)!</a></h3>
             <p>
                 There used to be a bug that under load caused timeouts to be interpreted as greens. This should not be the case anymore.
             </p><p>
                 If it's still the case please contact me <a href="https://twitter.com/FiloSottile">on Twitter</a> specifying the hostname and time.
             </p>
 
-            <h3><a name="falsepositive" href="#falsepositive">I'm getting false positives (red)!</h3></a>
+            <h3><a name="falsepositive" href="#falsepositive">I'm getting false positives (red)!</a></h3>
             <p>
                 Be careful, unless you glitched the site hammering the button, there is no way I can think of a red is not a red.
             </p><p>
@@ -161,33 +161,47 @@ h3 {
                 Please come comment to <a href="https://github.com/FiloSottile/Heartbleed/issues/6">the issue</a> if you are affected. I'm looking for 3 things: memory dumps (to figure out where they came from), timestamps (as accurate as possible, try with the Network tab), a complete description of what you clicked and typed.
             </p>
 
-            <h3><a name="source" href="#source">Is source available? CLI?</h3></a>
+            <h3><a name="source" href="#source">Is source available? CLI?</a></h3>
             <p>
                 Yes and yes, get yourself a copy of Go 1.2 and head to <a href="https://github.com/FiloSottile/Heartbleed">GitHub</a>.
             </p>
 
-            <h3><a name="logs" href="#logs">Can you release/show logs?</h3></a>
+            <h3><a name="logs" href="#logs">Can you release/show logs?</a></h3>
             <p>
                 I don't think this would be responsible. People are trusting me with bits of their infrastructure information, and I think many trust me not to disclose them. My plea is to release only anonymous aggregated information - for sites outside the Alexa top 1000 (because hey, I'm going to tell you if one of them took 24 hours to patch).
             </p><p>
                 People are right wanting to know if a compromise happened for a site they use, and I'm trying to figure out how to responsibly meet this need. If you have opinions on this please ping me on Twitter.
             </p>
 
-            <h3><a name="exploit" href="#exploit">How do I weaponize this?</h3></a>
+            <h3><a name="exploit" href="#exploit">How do I weaponize this?</a></h3>
             <p>
                 I'm not gonna tell you how to extract more memory or what to do with it, sorry.
             </p>
 
-            <h3><a name="donate" href="#donate">Can I send something your way?</h3></a>
-            <p>
+            <h3><a name="donate" href="#donate">Can I send something your way?</a></h3>
+            <div>
                 A few people asked, so here are a couple of shiny buttons.<br>
-                PayPal email: filippo.valsorda@gmail.com<br>
+                €: <form style="display: inline-block;" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                <input type="hidden" name="cmd" value="_s-xclick">
+                <input type="hidden" name="hosted_button_id" value="9GPK7FN9ETQ9G">
+                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+                <img alt="" border="0" src="https://www.paypalobjects.com/it_IT/i/scr/pixel.gif" width="1" height="1">
+                </form>
+                $: <form style="display: inline-block;" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                <input type="hidden" name="cmd" value="_s-xclick">
+                <input type="hidden" name="hosted_button_id" value="3GD2C8GGAHQ2G">
+                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+                <img alt="" border="0" src="https://www.paypalobjects.com/it_IT/i/scr/pixel.gif" width="1" height="1">
+                </form>
+                <br>
                 <script data-gittip-username="FiloSottile" data-gittip-widget="button" src="//gttp.co/v1.js"></script><br>
                 <a class="coinbase-button" data-code="b0b690c431f738f85fbbef8f860bd9e7" data-button-style="custom_small" href="https://coinbase.com/checkouts/b0b690c431f738f85fbbef8f860bd9e7">Donate Bitcoins</a><script src="https://coinbase.com/assets/button.js" type="text/javascript"></script><br>
-                <script id='fb1wlqo'>(function(i){var f,s=document.getElementById(i);f=document.createElement('iframe');f.src='//api.flattr.com/button/view/?uid=FiloSottile&button=compact&url=http%3A%2F%2Ffilippo.io%2FHeartbleed';f.title='Flattr';f.height=20;f.width=110;f.style.borderWidth=0;s.parentNode.insertBefore(f,s);})('fb1wlqo');</script>
-            </p>
+                <script id='fb1wlqo'>(function(i){var f,s=document.getElementById(i);f=document.createElement('iframe');f.src='//api.flattr.com/button/view/?uid=FiloSottile&button=compact&url=http%3A%2F%2Ffilippo.io%2FHeartbleed';f.title='Flattr';f.height=20;f.width=110;f.style.borderWidth=0;s.parentNode.insertBefore(f,s);})('fb1wlqo');</script><br>
+                PayPal email: filippo.valsorda@gmail.com<br>
+                Bitcoin address: 1A8gzd6HebEbNFkKpTJpLqbk98SHTjzJTJ (<a href="https://chart.googleapis.com/chart?cht=qr&chl=bitcoin%3A1A8gzd6HebEbNFkKpTJpLqbk98SHTjzJTJ&choe=UTF-8&chs=300x300">QR</a>)
+            </div>
 
-            <h3><a name="falsesense" href="#falsesense">Shouldn't you tell me also if the server changed their cert?</h3></a>
+            <h3><a name="falsesense" href="#falsesense">Shouldn't you tell me also if the server changed their cert?</a></h3>
             <p>
               That's true. Unfortunately, there is no real way to check if a certificate have been re-keyed (a certificate can be re-keyed without dates being updated, and many CAs are doing this).
             </p><p>
@@ -196,7 +210,7 @@ h3 {
               It's site owners responsibility to tell users what was done to handle the issue and to tell them when to change their password. Also, <strong>site owners: please invalidate all users passwords and ask for them to be reset via email on first login, it's the responsible thing to do</strong>.
             </p>
 
-            <h3><a name="test" href="#test">Hey I need to test something, a vulnerable machine?</h3></a>
+            <h3><a name="test" href="#test">Hey I need to test something, a vulnerable machine?</a></h3>
             <p>
                 Be my guest: <code>ec2-54-81-196-192.compute-1.amazonaws.com:4433</code>. Don't be evil ;)
             </p><p>
@@ -205,21 +219,21 @@ h3 {
 openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout mycert.pem -out mycert.pem
 openssl s_server -cert mycert.pem -www</pre>
 
-            <h3><a name="abuse" href="#abuse">Hey you, with that IP, you are breaking into my machine!</h3></a>
+            <h3><a name="abuse" href="#abuse">Hey you, with that IP, you are breaking into my machine!</a></h3>
             <p>
                 This is a completely safe test, and will do nothing to your systems if you have patched. Please patch.
             </p><p>
                 <a href="hosts.txt">Here</a> is a list of the machine hosts and IPs. Please don't file Abuse reports, okay? <3
             </p>
 
-            <h3><a name="report" href="#report">My issue is not answered here :(</h3></a>
+            <h3><a name="report" href="#report">My issue is not answered here :(</a></h3>
             <p>
                 Oh snap, contact me on <a href="https://twitter.com/FiloSottile">on Twitter</a> or open an issue <a href="https://github.com/FiloSottile/Heartbleed">on GitHub</a>.
             </p><p>
                 If you are reporting a bug or some unsupported service, please provide hostnames, memory dumps, exact errors...
             </p>
 
-            <h3><a name="loadissue" href="#loadissue">Load issues - fixed</h3></a>
+            <h3><a name="loadissue" href="#loadissue">Load issues - fixed</a></h3>
             <p>
                 Load issues (probably) caused many connections to the tested servers to fail randomly and report a <strong>FALSE NEGATIVE (green)</strong>.
             </p><p>
