@@ -105,13 +105,13 @@ h3 {
 
             <h3><a name="wentwrong" href="#wentwrong">Uh-oh, something went wrong.<br>What went wrong?</h3></a>
             <p>
-                This error means that I can't tell if the server is vulnerable. This might be because:
+                This error means that I can't tell if the server is vulnerable (probably not). This might be because:
                 <ul><li>
                   <code>broken pipe</code>, <code>connection reset by peer</code> and <code>timeout</code> errors are rising now, they are probably counter-measures, firewalls and IPS closing the connection or sink-holing it when they detect a heartbeat
                 </li><li>
-                  <code>broken pipe</code> is apparently also caused by the unaffected IIS server
+                  <code>broken pipe</code> is also caused by the <strong>unaffected</strong> IIS server
                 </li><li>
-                  <code>timeout</code> is apparently also caused by patched servers that don't respond to or "quit" message. This happens with a patched server, but is not a green since the same behavior might be caused by my servers being overloaded, so I can't be sure.
+                  <code>timeout</code> is apparently also caused by patched servers that don't respond to our "quit" message. This happens with a patched server, but is not a green since the same behavior might be caused by my servers being overloaded, so I can't be sure.
                 </li><li>
                   <code>tls: oversized record received with length 20291</code> (and sometimes <code>EOF</code>) means that the service uses STARTLS and <a href="https://github.com/FiloSottile/Heartbleed/issues/14">I still need to implement it</a>. Use the <a href="https://github.com/FiloSottile/Heartbleed">command line tool</a> meanwhile, with <code>-starttls=ftp/imap/...</code>.
                 </li><li>
