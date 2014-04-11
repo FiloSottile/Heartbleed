@@ -3,9 +3,9 @@
 package main
 
 import (
-	bleed "github.com/FiloSottile/Heartbleed/bleed"
 	"encoding/json"
 	"fmt"
+	bleed "github.com/FiloSottile/Heartbleed/bleed"
 	"log"
 	"net/http"
 	"net/url"
@@ -34,19 +34,50 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 	data, err := bleed.Heartbleed(tgt, PAYLOAD, skip)
 	var rc int
 	var errS string
+
 	if err == bleed.Safe {
 		rc = 1
-		data = []byte("")
-		log.Printf("%v (%v) - SAFE", tgt.HostIp, tgt.Service)
 	} else if err != nil {
 		rc = 2
-		data = []byte("")
-		errS = err.Error()
-		log.Printf("%v (%v) - ERROR", tgt.HostIp, tgt.Service)
 	} else {
 		rc = 0
-		log.Printf("%v (%v) - VULNERABLE [skip: %v]", tgt.HostIp, tgt.Service, skip)
+		// _, err := bleed.Heartbleed(tgt, PAYLOAD)
+		// if err == nil {
+		// 	// Two VULN in a row
+		// 	rc = 0
+		// } else {
+		// 	// One VULN and one not
+		// 	_, err := bleed.Heartbleed(tgt, PAYLOAD)
+		// 	if err == nil {
+		// 		// 2 VULN on 3 tries
+		// 		rc = 0
+		// 	} else {
+		// 		// 1 VULN on 3 tries
+		// 		if err == bleed.Safe {
+		// 			rc = 1
+		// 		} else {
+		// 			rc = 2
+		// 		}
+		// 	}
+		// }
 	}
+
+	switch rc {
+	case 0:
+		log.Printf("%v (%v) - VULNERABLE [skip: %v]", tgt.HostIp, tgt.Service, skip)
+	case 1:
+		data = []byte("")
+		log.Printf("%v (%v) - SAFE", tgt.HostIp, tgt.Service)
+	case 2:
+		data = []byte("")
+		errS = err.Error()
+		if errS == "Please try again" {
+			log.Printf("%v (%v) - MISMATCH", tgt.HostIp, tgt.Service)
+		} else {
+			log.Printf("%v (%v) - ERROR", tgt.HostIp, tgt.Service)
+		}
+	}
+
 	res := result{rc, string(data), errS, tgt.HostIp}
 	j, err := json.Marshal(res)
 	if err != nil {

