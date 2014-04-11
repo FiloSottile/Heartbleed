@@ -12,7 +12,7 @@ import (
 )
 
 type Target struct {
-	HostIp   string
+	HostIp  string
 	Service string
 }
 

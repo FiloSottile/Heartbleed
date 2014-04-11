@@ -25,37 +25,29 @@ type result struct {
 	Code  int    `json:"code"`
 	Data  string `json:"data"`
 	Error string `json:"error"`
+	Host  string `json:"host"`
 }
 
-func bleedHandler(w http.ResponseWriter, r *http.Request) {
+func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	host := r.URL.Path[len("/bleed/"):]
-	u, err := url.Parse(host)
-	if err == nil && u.Host != "" {
-		host = u.Host
-	}
 
-	tgt := bleed.Target{
-		HostIp: string(host),
-		Service: "https",
-	}
-	data, err := bleed.Heartbleed(&tgt, PAYLOAD)
+	data, err := bleed.Heartbleed(tgt, PAYLOAD)
 	var rc int
 	var errS string
 	if err == bleed.Safe {
 		rc = 1
 		data = []byte("")
-		log.Printf("%v - SAFE", host)
+		log.Printf("%v (%v) - SAFE", tgt.HostIp, tgt.Service)
 	} else if err != nil {
 		rc = 2
 		data = []byte("")
 		errS = err.Error()
-		log.Printf("%v - ERROR", host)
+		log.Printf("%v (%v) - ERROR", tgt.HostIp, tgt.Service)
 	} else {
 		rc = 0
-		log.Printf("%v - VULNERABLE", host)
+		log.Printf("%v (%v) - VULNERABLE", tgt.HostIp, tgt.Service)
 	}
-	res := result{rc, string(data), errS}
+	res := result{rc, string(data), errS, tgt.HostIp}
 	j, err := json.Marshal(res)
 	if err != nil {
 		log.Println("ERROR", err)
@@ -64,10 +56,43 @@ func bleedHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func bleedHandler(w http.ResponseWriter, r *http.Request) {
+	host := r.URL.Path[len("/bleed/"):]
+
+	tgt := bleed.Target{
+		HostIp:  string(host),
+		Service: "https",
+	}
+	handleRequest(&tgt, w, r)
+}
+
+func bleedQueryHandler(w http.ResponseWriter, r *http.Request) {
+	q, ok := r.URL.Query()["u"]
+	if !ok || len(q) != 1 {
+		return
+	}
+
+	tgt := bleed.Target{
+		HostIp:  string(q[0]),
+		Service: "https",
+	}
+
+	u, err := url.Parse(tgt.HostIp)
+	if err == nil && u.Host != "" {
+		tgt.HostIp = u.Host
+		if u.Scheme != "" {
+			tgt.Service = u.Scheme
+		}
+	}
+
+	handleRequest(&tgt, w, r)
+}
+
 func main() {
 	http.HandleFunc("/", defaultHandler)
 	http.HandleFunc("/test", testHandler)
 	http.HandleFunc("/bleed/", bleedHandler)
+	http.HandleFunc("/bleed/query", bleedQueryHandler)
 	err := http.ListenAndServe(":80", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
