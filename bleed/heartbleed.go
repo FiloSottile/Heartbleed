@@ -59,7 +59,7 @@ func heartbleedCheck(conn *tls.Conn, buf *bytes.Buffer, vuln chan bool) func([]b
 	}
 }
 
-func Heartbleed(tgt *Target, payload []byte) (out []byte, err error) {
+func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (out []byte, err error) {
 	host := tgt.HostIp
 
 	if strings.Index(host, ":") == -1 {
@@ -78,7 +78,8 @@ func Heartbleed(tgt *Target, payload []byte) (out []byte, err error) {
 		}
 	}
 
-	conn := tls.Client(net_conn, &tls.Config{InsecureSkipVerify: true})
+	hname := strings.Split(host, ":")
+	conn := tls.Client(net_conn, &tls.Config{InsecureSkipVerify: skipVerify, ServerName: hname[0]})
 	err = conn.Handshake()
 	if err != nil {
 		return

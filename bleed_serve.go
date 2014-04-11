@@ -28,10 +28,10 @@ type result struct {
 	Host  string `json:"host"`
 }
 
-func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request) {
+func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, skip bool) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	data, err := bleed.Heartbleed(tgt, PAYLOAD)
+	data, err := bleed.Heartbleed(tgt, PAYLOAD, skip)
 	var rc int
 	var errS string
 	if err == bleed.Safe {
@@ -45,7 +45,7 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request) {
 		log.Printf("%v (%v) - ERROR", tgt.HostIp, tgt.Service)
 	} else {
 		rc = 0
-		log.Printf("%v (%v) - VULNERABLE", tgt.HostIp, tgt.Service)
+		log.Printf("%v (%v) - VULNERABLE [skip: %v]", tgt.HostIp, tgt.Service, skip)
 	}
 	res := result{rc, string(data), errS, tgt.HostIp}
 	j, err := json.Marshal(res)
@@ -63,13 +63,19 @@ func bleedHandler(w http.ResponseWriter, r *http.Request) {
 		HostIp:  string(host),
 		Service: "https",
 	}
-	handleRequest(&tgt, w, r)
+	handleRequest(&tgt, w, r, true)
 }
 
 func bleedQueryHandler(w http.ResponseWriter, r *http.Request) {
 	q, ok := r.URL.Query()["u"]
 	if !ok || len(q) != 1 {
 		return
+	}
+
+	skip, ok := r.URL.Query()["skip"]
+	s := false
+	if ok && len(skip) == 1 {
+		s = true
 	}
 
 	tgt := bleed.Target{
@@ -85,7 +91,7 @@ func bleedQueryHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	handleRequest(&tgt, w, r)
+	handleRequest(&tgt, w, r, s)
 }
 
 func main() {
