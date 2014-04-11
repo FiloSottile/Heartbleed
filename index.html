@@ -109,6 +109,11 @@ h1 {
     font-size: 20px;
 }
 
+.note {
+    font-size: 15px;
+    line-height: 15px;
+}
+
 </style>
     </head>
     <body>
@@ -125,24 +130,28 @@ h1 {
             </div>
             <h3 class="bg-info banner">
                 If there are problems, head to the <a href="faq.html">FAQ</a>
+                <div class="note">Sysadmins: please note the new "ignore certificates" checkbox</div>
             </h3>
             <!--
             <h3 class="bg-primary banner">
                 If you want to check a popular site, it might be <a href="alexa.html">here</a>
             </h3>
             -->
-            <h3 class="bg-primary banner">
-                There are some isolated false positives, apparently.<br>Repeat tests a couple times.
-            </h3>
             <p class="lead">
                 Enter a URL or a hostname to test the server for CVE-2014-0160.
             </p>
             <p>
-            <form class="form-inline" role="form">
+            <form role="form">
+            <div class="form-inline" >
               <div class="form-group">
                 <input type="text" class="form-control" id="hostname" placeholder="example.com" autocapitalize="off" autocorrect="off">
               </div>
               <button type="submit" class="btn btn-primary btn-lg" id="go">Go!</button>
+            </div>
+              <label class="checkbox" for="ignore-cert">
+                  <input type="checkbox" value="" id="ignore-cert" data-toggle="checkbox">
+                  Advanced: ignore certificates
+              </label>
             </form>
         </p>
         <h3 class="bg-success bleed bleed-safe">
@@ -154,6 +163,7 @@ h1 {
             <br>
             <span class="lookfaq">Check what it means at the <a href="faq.html#wentwrong">FAQ</a>.<br>
                 It might mean that the server is safe, we just can't be 100% sure!</span>
+            <span class="lookfaq cert">If you know what you are doing, tick the ignore certificates box. Otherwise please try again!</span>
         </h3>
         <h3 class="bg-danger bleed bleed-vuln">
             <span class="hostname"></span> IS VULNERABLE.
@@ -203,14 +213,28 @@ h1 {
 </script><script src="js/nprogress.js" type="text/javascript">
 </script>
 <script type="text/javascript">
+if (!String.prototype.startsWith) {
+  Object.defineProperty(String.prototype, 'startsWith', {
+    enumerable: false,
+    configurable: false,
+    writable: false,
+    value: function (searchString, position) {
+      position = position || 0;
+      return this.indexOf(searchString, position) === position;
+    }
+  });
+}
+
 $( "form" ).submit(function( event ) {
     $('button').attr('disabled', 'disabled');
   var host = $( "input:first" ).val();
     $(".bleed").hide()
     NProgress.start();
-    $.getJSON( "http://bleed-1161785939.us-east-1.elb.amazonaws.com/bleed/query", {
-        u: host
-    }, function( data ) {
+    get = {u: host};
+    if ($('#ignore-cert').is(':checked')) {
+        get.skip = 1
+    }
+    $.getJSON( "http://bleed-1161785939.us-east-1.elb.amazonaws.com/bleed/query", get, function( data ) {
         $('button').removeAttr('disabled')
         NProgress.done();
         // console.log(data);
@@ -223,6 +247,13 @@ $( "form" ).submit(function( event ) {
             $(".bleed-safe").show()
         } else {
             $('#error').text(data.error);
+            if (data.error.startsWith("x509")) {
+                $('.lookfaq').hide()
+                $('.cert').show()
+            } else {
+                $('.lookfaq').show()
+                $('.cert').hide()
+            }
             $(".bleed-error").show()
         }
   });
