@@ -11,23 +11,27 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"time"
 
 	bleed "github.com/FiloSottile/Heartbleed/bleed"
+	flags "github.com/jessevdk/go-flags"
 	"github.com/smugmug/godynamo/conf"
 	"github.com/smugmug/godynamo/conf_file"
 	ep "github.com/smugmug/godynamo/endpoint"
 	get "github.com/smugmug/godynamo/endpoints/get_item"
 	put "github.com/smugmug/godynamo/endpoints/put_item"
 	keepalive "github.com/smugmug/godynamo/keepalive"
+	mzutil "mzutil"
 )
 
 var PAYLOAD = []byte("heartbleed.mozilla.com")
-var LOCALHOST = "http://localhost"
+var REDIRHOST = "http://localhost"
 var PORT_SRV = ":8082"
 var CACHE_TAB = "mozHeartbleed"
 var EXPRY time.Duration
+var VERSION = "0.1"
 
 const (
 	VUNERABLE = iota
@@ -35,8 +39,17 @@ const (
 	ERROR
 )
 
+/* Command line args for the app.
+ */
+var opts struct {
+	ConfigFile string `short:"c" long:"config" optional:true description:"General Config file"`
+	Profile    string `long:"profile" optional:true`
+	MemProfile string `long:"memprofile" optional:true`
+	LogLevel   int    `short:"l" long:"loglevel" optional:true`
+}
+
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, LOCALHOST, http.StatusFound)
+	http.Redirect(w, r, REDIRHOST, http.StatusFound)
 }
 
 func testHandler(w http.ResponseWriter, r *http.Request) {
@@ -185,9 +198,26 @@ func main() {
 
 	var err error
 
+	// Get the configurations
+	flags.ParseArgs(&opts, os.Args)
+	if opts.ConfigFile == "" {
+		opts.ConfigFile = "config.ini"
+	}
+	config, err := mzutil.ReadMzConfig(opts.ConfigFile)
+	if err != nil {
+		log.Fatal("Could not read config file " +
+			opts.ConfigFile + " " +
+			err.Error())
+	}
+	config.SetDefault("VERSION", "0.5")
+	REDIRHOST = config.Get("redir.host", "localhost")
+	PORT_SRV = config.Get("listen.port", ":8082")
+	os.Setenv("GODYNAMO_CONF_FILE",
+		config.Get("godynamo.conf.file", "./conf/aws-config.json"))
+
 	// should take a conf arg
 	conf_file.Read()
-	EXPRY, err = time.ParseDuration("10m")
+	EXPRY, err = time.ParseDuration(config.Get("expry", "10m"))
 
 	if conf.Vals.Initialized == false {
 		panic("Uninitialized conf.Vals global")
