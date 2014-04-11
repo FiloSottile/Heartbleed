@@ -2,6 +2,6 @@
 	"AppName": "Heartbleed",
 	"BuildConstraints": "darwin,amd64 linux,amd64",
 	"MainDirsExclude": "tls",
-	"PackageVersion": "0.0.4",
+	"PackageVersion": "0.0.6",
 	"ConfigVersion": "0.9"
 }

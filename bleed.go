@@ -29,6 +29,7 @@ func main() {
 	var tgt bleed.Target
 
 	flag.StringVar(&tgt.Service, "service", "https", fmt.Sprintf("Specify a service name to test (using STARTTLS if necessary). \n\t\tBesides HTTPS, currently supported services are: \n\t\t%s", bleed.Services))
+	check_cert := flag.Bool("check-cert", false, "check the server certificate")
 	flag.Parse()
 
 	if flag.NArg() < 1 {
@@ -45,7 +46,7 @@ func main() {
 		}
 	}
 
-	out, err := bleed.Heartbleed(&tgt, []byte("heartbleed.filippo.io"), false)
+	out, err := bleed.Heartbleed(&tgt, []byte("heartbleed.filippo.io"), !(*check_cert))
 	if err == bleed.Safe {
 		log.Printf("%v - SAFE", tgt.HostIp)
 		os.Exit(0)
