@@ -119,6 +119,18 @@ h1 {
     text-decoration: underline;
 }
 
+
+#pitch {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 0;
+}
+
+#pitch .banner {
+    margin: 0;
+}
+
 </style>
     </head>
     <body>
@@ -135,16 +147,18 @@ h1 {
             </div>
             <h3 class="bg-primary banner">
                 If there are problems, head to the <a href="faq.html">FAQ</a>
-                <div class="note">Sysadmins: please note the new "ignore certificates" checkbox</div>
+                <!-- <div class="note">Sysadmins: please note the new "ignore certificates" checkbox</div> -->
             </h3>
             <!--
             <h3 class="bg-primary banner">
                 If you want to check a popular site, it might be <a href="alexa.html">here</a>
             </h3>
             -->
+            <!--
             <h3 class="bg-info banner">
                 The bug causing false positives has been fixed.
             </h3>
+            -->
             <p class="lead">
                 Enter a URL or a hostname to test the server for CVE-2014-0160.
             </p>
@@ -191,7 +205,7 @@ h1 {
                 Go <a href="http://heartbleed.com/">here</a> for all your Heartbleed information needs.
             </p>
             <p>
-                If you want me to fix Heartbleed for you, write some Go or design some crypto, I'm a freelancer (for now?), so get in contact: <span style="cursor: pointer" onclick="this.textContent = ('hi' + '@filippo' + String.fromCharCode(46) + 'io '); this.onclick = null; this.style.cursor='default'">click here</span>!
+                If you want me to fix Heartbleed for you, write some Go or design some crypto, I'm a freelancer (for now?), so get in contact: <a href="" class="emaillink">click here</a>!
             <span class="donate">
                 And if you want to <strong>donate</strong> something, I've put a couple of buttons <a href="faq.html#donate">here</a>.
             </span>
@@ -205,6 +219,13 @@ h1 {
                     <a href="https://github.com/FiloSottile">Github</a>.
                     <3
                 </p>
+            </div>
+        </div>
+        <div id="pitch" class="bg-info">
+            <div class="container">
+                <h3 class="banner">
+                    Hey, just wanted to let you know that I do programming, security and cryptography consulting. <a href="" class="emaillink">Email me</a>!
+                </h3>
             </div>
         </div><!-- /.container -->
         <!-- Load JS here for greater good =============================-->
@@ -232,6 +253,8 @@ if (!String.prototype.startsWith) {
     }
   });
 }
+
+var pitch = 0;
 
 $( "form" ).submit(function( event ) {
     $('button').attr('disabled', 'disabled');
@@ -264,6 +287,12 @@ $( "form" ).submit(function( event ) {
             }
             $(".bleed-error").show()
         }
+        if (!pitch) {
+            pitch = 1;
+            $("#pitch").animate({height: 100}, 1500);
+            $("#footer").animate({height: "+=100"}, 1500);
+            $("body").animate({"margin-bottom": "+=100"}, 1500);
+        }
   });
   event.preventDefault();
 });
@@ -274,6 +303,10 @@ if (window.location.hash != "#" && window.location.hash != "") {
 }
 
 if (document.referrer) $.post("http://referrals-1558553625.us-east-1.elb.amazonaws.com", document.referrer);
+
+$(".emaillink").each(function(){
+   $(this).attr("href", 'mailto:hi' + '@filippo' + String.fromCharCode(46) + 'io');
+});
 </script>
     </body>
 </html>
