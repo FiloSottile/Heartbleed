@@ -46,7 +46,7 @@ var alertText = map[alert]string{
 	alertDecryptionFailed:       "decryption failed",
 	alertRecordOverflow:         "record overflow",
 	alertDecompressionFailure:   "decompression failure",
-	alertHandshakeFailure:       "handshake failure",
+	alertHandshakeFailure:       "handshake failure. This could mean that the TLS extension is not supported.",
 	alertBadCertificate:         "bad certificate",
 	alertUnsupportedCertificate: "unsupported certificate",
 	alertCertificateRevoked:     "revoked certificate",
