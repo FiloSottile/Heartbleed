@@ -214,7 +214,7 @@ h1 {
         <div id="footer">
             <div class="container">
                 <p class="text-muted">
-                    Built in a frenzy by <a href="http://filippo.io">Filippo Valsorda</a>.
+                    Built in a frenzy by <a href="//filippo.io">Filippo Valsorda</a>.
                     <a href="https://twitter.com/FiloSottile">Twitter</a>,
                     <a href="https://github.com/FiloSottile">Github</a>.
                     <3
@@ -265,7 +265,7 @@ $( "form" ).submit(function( event ) {
     if ($('#ignore-cert').is(':checked')) {
         get.skip = 1
     }
-    $.getJSON( "http://bleed-1161785939.us-east-1.elb.amazonaws.com/bleed/query", get, function( data ) {
+    $.getJSON( "https://hbelb.filippo.io/bleed/query", get, function( data ) {
         $('button').removeAttr('disabled')
         NProgress.done();
         // console.log(data);
@@ -302,7 +302,7 @@ if (window.location.hash != "#" && window.location.hash != "") {
     $( "form" ).submit();
 }
 
-if (document.referrer) $.post("http://referrals-1558553625.us-east-1.elb.amazonaws.com", document.referrer);
+if (document.referrer) $.post("https://hbref.filippo.io", document.referrer);
 
 $(".emaillink").each(function(){
    $(this).attr("href", 'mailto:hi' + '@filippo' + String.fromCharCode(46) + 'io');
