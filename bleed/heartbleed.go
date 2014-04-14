@@ -64,7 +64,7 @@ func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	net_conn.SetDeadline(time.Now().Add(9 * time.Second))
+	net_conn.SetDeadline(time.Now().Add(10 * time.Second))
 
 	if tgt.Service != "https" {
 		err = DoStartTLS(net_conn, tgt.Service)
@@ -96,7 +96,7 @@ func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (string, error) {
 	go func() {
 		// TODO: rewrite this, find a better way to detect server being "alive"
 		// (<joke>maybe send an heartbeat?</joke>)
-		time.Sleep(3 * time.Second)
+		time.Sleep(5 * time.Second)
 		_, err := conn.Write([]byte("quit\n"))
 		conn.Read(nil)
 		res <- err
@@ -121,7 +121,7 @@ func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (string, error) {
 		}
 		return "", Safe
 
-	case <-time.After(6 * time.Second):
+	case <-time.After(8 * time.Second):
 		return "", Timeout
 	}
 
