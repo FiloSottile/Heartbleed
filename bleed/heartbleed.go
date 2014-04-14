@@ -2,6 +2,8 @@ package heartbleed
 
 import (
 	"bytes"
+	_ "crypto/sha256"
+	_ "crypto/sha512"
 	"encoding/binary"
 	"errors"
 	"github.com/FiloSottile/Heartbleed/tls"
