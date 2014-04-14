@@ -66,10 +66,10 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 	case 0:
 		log.Printf("%v (%v) - VULNERABLE [skip: %v]", tgt.HostIp, tgt.Service, skip)
 	case 1:
-		data = []byte("")
+		data = ""
 		log.Printf("%v (%v) - SAFE", tgt.HostIp, tgt.Service)
 	case 2:
-		data = []byte("")
+		data = ""
 		errS = err.Error()
 		if errS == "Please try again" {
 			log.Printf("%v (%v) - MISMATCH", tgt.HostIp, tgt.Service)
@@ -78,7 +78,7 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 		}
 	}
 
-	res := result{rc, string(data), errS, tgt.HostIp}
+	res := result{rc, data, errS, tgt.HostIp}
 	j, err := json.Marshal(res)
 	if err != nil {
 		log.Println("ERROR", err)

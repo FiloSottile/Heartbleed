@@ -53,6 +53,8 @@ type Conn struct {
 	hand     bytes.Buffer // handshake data waiting to be read
 
 	tmp [16]byte
+
+	Heartbeats chan []byte
 }
 
 // Access to net.Conn methods.
@@ -654,9 +656,7 @@ Again:
 		c.hand.Write(data)
 
 	case recordTypeHeartbeat:
-		if heartbeatCallback != nil {
-			heartbeatCallback(data)
-		}
+		c.Heartbeats <- data
 	}
 
 	if b != nil {
@@ -691,10 +691,8 @@ func (c *Conn) sendAlert(err alert) error {
 	return c.sendAlertLocked(err)
 }
 
-var heartbeatCallback func(data []byte)
-
-func (c *Conn) SendHeartbeat(data []byte, callback func(data []byte)) error {
-	heartbeatCallback = callback
+func (c *Conn) SendHeartbeat(data []byte) error {
+	c.Heartbeats = make(chan []byte, 1)
 	_, err := c.writeRecord(recordTypeHeartbeat, data)
 	return err
 }

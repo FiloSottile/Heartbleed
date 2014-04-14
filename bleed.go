@@ -57,7 +57,7 @@ func main() {
 		log.Printf("%v - ERROR: %v", tgt.HostIp, err)
 		os.Exit(2)
 	} else {
-		log.Printf("%v\n", string(out))
+		log.Printf("%v\n", out)
 		log.Printf("%v - VULNERABLE", tgt.HostIp)
 		os.Exit(1)
 	}
