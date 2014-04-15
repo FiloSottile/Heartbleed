@@ -35,7 +35,7 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 	var rc int
 	var errS string
 
-	if err == bleed.Safe {
+	if err == bleed.Safe || err == bleed.Closed {
 		rc = 1
 	} else if err != nil {
 		rc = 2

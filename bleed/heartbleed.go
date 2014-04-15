@@ -8,8 +8,10 @@ import (
 	"errors"
 	"github.com/FiloSottile/Heartbleed/tls"
 	"github.com/davecgh/go-spew/spew"
+	"io"
 	"net"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -19,6 +21,7 @@ type Target struct {
 }
 
 var Safe = errors.New("heartbleed: no response or payload not found")
+var Closed = errors.New("heartbleed: the site closed/reset the connection (usually a safe reaction to the heartbeat)")
 var Timeout = errors.New("heartbleed: timeout")
 
 var padding = []byte(" YELLOW SUBMARINE ")
@@ -87,19 +90,39 @@ func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (string, error) {
 		return "", err
 	}
 
+	res := make(chan error)
+	closeNotifySent := false
 	go func() {
 		// Needed to process the incoming heartbeat
-		conn.Read(nil)
+		_, err := conn.Read(nil)
+
+		nerr, ok := err.(*net.OpError)
+		if ok && nerr.Err != nil && nerr.Err.Error() == "unexpected message" {
+			res <- Safe
+			return
+		}
+
+		if err == io.EOF || (err != nil && err.Error() == "EOF") ||
+			(ok && nerr.Err == syscall.ECONNRESET) {
+			if closeNotifySent && (err == io.EOF || err.Error() == "EOF") {
+				// the connection terminated normally
+				res <- Safe
+				return
+			} else {
+				// early on-heartbeat connection closures
+				res <- Closed
+				return
+			}
+		}
+
+		res <- err
 	}()
 
-	res := make(chan error)
 	go func() {
-		// TODO: rewrite this, find a better way to detect server being "alive"
-		// (<joke>maybe send an heartbeat?</joke>)
-		time.Sleep(5 * time.Second)
-		_, err := conn.Write([]byte("quit\n"))
-		conn.Read(nil)
-		res <- err
+		// Check if the server is still alive
+		time.Sleep(3 * time.Second)
+		conn.SendCloseNotify()
+		closeNotifySent = true
 	}()
 
 	select {
@@ -116,10 +139,7 @@ func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (string, error) {
 		return out, nil
 
 	case r := <-res:
-		if r != nil {
-			return "", r
-		}
-		return "", Safe
+		return "", r
 
 	case <-time.After(8 * time.Second):
 		return "", Timeout

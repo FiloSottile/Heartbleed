@@ -962,6 +962,10 @@ func (c *Conn) Close() error {
 	return alertErr
 }
 
+func (c *Conn) SendCloseNotify() error {
+	return c.sendAlert(alertCloseNotify)
+}
+
 // Handshake runs the client or server handshake
 // protocol if it has not yet been run.
 // Most uses of this package need not call Handshake
