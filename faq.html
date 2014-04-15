@@ -203,7 +203,7 @@ h3 {
 
             <h3><a name="falsesense" href="#falsesense">Shouldn't you tell me also if the server changed their cert?</a></h3>
             <p>
-              That's true. Unfortunately, there is no real way to check if a certificate have been re-keyed (a certificate can be re-keyed without dates being updated, and many CAs are doing this).
+              That's true. Unfortunately, there is no real way to check if a certificate has been re-keyed without comparing it to the previous one (a certificate can be re-keyed without dates being updated, and many CAs are doing this). The ZMap people <a href="https://zmap.io/heartbleed/certificates.html">did that the right way</a>.
             </p><p>
               Moreover, the security risk of a patched server with a old cert is way lower, an attacker would need to be intercepting your traffic to take advantage of this. So I feel that the priority now is getting users to change passwords that might have been leaked to the world, not to a really skilled roommate, their malicious ISP or the NSA (these 3 being the few that can probably MiTM you).
             </p><p>
