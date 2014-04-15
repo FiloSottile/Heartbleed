@@ -41,10 +41,10 @@ const (
 /* Command line args for the app.
  */
 var opts struct {
-	ConfigFile string `short:"c" long:"config" optional:true description:"General Config file"`
-	Profile    string `long:"profile" optional:true`
-	MemProfile string `long:"memprofile" optional:true`
-	LogLevel   int    `short:"l" long:"loglevel" optional:true`
+	ConfigFile string `short:"c" long:"config" optional:"true" description:"General Config file"`
+	Profile    string `long:"profile" optional:"true"`
+	MemProfile string `long:"memprofile" optional:"true"`
+	LogLevel   int    `short:"l" long:"loglevel" optional:"true"`
 }
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
@@ -198,7 +198,7 @@ func main() {
 	var err error
 
 	// Get the configurations
-	flags.ParseArgs(&opts, os.Args)
+	flags.Parse(&opts)
 	if opts.ConfigFile == "" {
 		opts.ConfigFile = "config.ini"
 	}
