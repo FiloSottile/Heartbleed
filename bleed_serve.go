@@ -1,5 +1,3 @@
-//+build skip
-
 // From heartbleed.fillip.io
 // Adding DynamoDB caching.
 
@@ -15,15 +13,16 @@ import (
 	"strconv"
 	"time"
 
-	bleed "github.com/FiloSottile/Heartbleed/bleed"
+	mzutil "github.com/mozilla-services/Heartbleed/mzutil"
+
 	flags "github.com/jessevdk/go-flags"
+	bleed "github.com/mozilla-services/Heartbleed/bleed"
 	"github.com/smugmug/godynamo/conf"
 	"github.com/smugmug/godynamo/conf_file"
 	ep "github.com/smugmug/godynamo/endpoint"
 	get "github.com/smugmug/godynamo/endpoints/get_item"
 	put "github.com/smugmug/godynamo/endpoints/put_item"
 	keepalive "github.com/smugmug/godynamo/keepalive"
-	mzutil "mzutil"
 )
 
 var PAYLOAD = []byte("heartbleed.mozilla.com")

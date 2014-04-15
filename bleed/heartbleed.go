@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"github.com/FiloSottile/Heartbleed/tls"
-	"github.com/davecgh/go-spew/spew"
 	"net"
 	"strings"
 	"time"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/mozilla-services/Heartbleed/tls"
 )
 
 type Target struct {
-	HostIp   string
+	HostIp  string
 	Service string
 }
 

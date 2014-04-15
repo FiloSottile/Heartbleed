@@ -20,8 +20,8 @@ If a service is specified besides `https`, the tool checks the specified service
 You will need Go 1.2.x, otherwise you get `undefined: cipher.AEAD` and other errors
 
 ```
-go get github.com/FiloSottile/Heartbleed
-go install github.com/FiloSottile/Heartbleed
+go get github.com/mozilla-services/Heartbleed
+go install github.com/mozilla-services/Heartbleed
 ```
 
 You can also use docker to get a ready to run virtual machine with heartbleed, see https://github.com/kasimon/docker-heartbleed.
