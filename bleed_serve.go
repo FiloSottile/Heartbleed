@@ -74,7 +74,7 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 		if errS == "Please try again" {
 			log.Printf("%v (%v) - MISMATCH", tgt.HostIp, tgt.Service)
 		} else {
-			log.Printf("%v (%v) - ERROR", tgt.HostIp, tgt.Service)
+			log.Printf("%v (%v) - ERROR [%v]", tgt.HostIp, tgt.Service, errS)
 		}
 	}
 
