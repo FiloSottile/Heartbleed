@@ -134,69 +134,69 @@ func cacheSet(host string, state int) (err error) {
 func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, skip bool) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-    // Caching 
-    var fullCheck bool
-    var rc int
-    var err error
-    var errS string
-    data := ""
-    if cReply, ok := cacheCheck(tgt.HostIp); ok {
-        if cReply.LastUpdate < time.Now().UTC().Truncate(EXPRY).Unix() || int(cReply.Status) == 2 {
-            log.Printf("Refetching " + tgt.HostIp)
-            fullCheck = true
-        } else {
-            rc = int(cReply.Status)
-            fullCheck = false
-        }
-    }
+	// Caching
+	var fullCheck bool
+	var rc int
+	var err error
+	var errS string
+	data := ""
+	if cReply, ok := cacheCheck(tgt.HostIp); ok {
+		if cReply.LastUpdate < time.Now().UTC().Truncate(EXPRY).Unix() || int(cReply.Status) == 2 {
+			log.Printf("Refetching " + tgt.HostIp)
+			fullCheck = true
+		} else {
+			rc = int(cReply.Status)
+			fullCheck = false
+		}
+	}
 
-    if fullCheck {
-        data, err = bleed.Heartbleed(tgt, PAYLOAD, skip)
+	if fullCheck {
+		data, err = bleed.Heartbleed(tgt, PAYLOAD, skip)
 
-        if err == bleed.Safe || err == bleed.Closed {
-            rc = 1
-        } else if err != nil {
-            rc = 2
-        } else {
-            rc = 0
-            // _, err := bleed.Heartbleed(tgt, PAYLOAD)
-            // if err == nil {
-            // 	// Two VULN in a row
-            // 	rc = 0
-            // } else {
-            // 	// One VULN and one not
-            // 	_, err := bleed.Heartbleed(tgt, PAYLOAD)
-            // 	if err == nil {
-            // 		// 2 VULN on 3 tries
-            // 		rc = 0
-            // 	} else {
-            // 		// 1 VULN on 3 tries
-            // 		if err == bleed.Safe {
-            // 			rc = 1
-            // 		} else {
-            // 			rc = 2
-            // 		}
-            // 	}
-            // }
-        }
-        err = cacheSet(tgt.HostIp, rc)
+		if err == bleed.Safe || err == bleed.Closed {
+			rc = 1
+		} else if err != nil {
+			rc = 2
+		} else {
+			rc = 0
+			// _, err := bleed.Heartbleed(tgt, PAYLOAD)
+			// if err == nil {
+			// 	// Two VULN in a row
+			// 	rc = 0
+			// } else {
+			// 	// One VULN and one not
+			// 	_, err := bleed.Heartbleed(tgt, PAYLOAD)
+			// 	if err == nil {
+			// 		// 2 VULN on 3 tries
+			// 		rc = 0
+			// 	} else {
+			// 		// 1 VULN on 3 tries
+			// 		if err == bleed.Safe {
+			// 			rc = 1
+			// 		} else {
+			// 			rc = 2
+			// 		}
+			// 	}
+			// }
+		}
+		err = cacheSet(tgt.HostIp, rc)
 
-        switch rc {
-        case 0:
-            log.Printf("%v (%v) - VULNERABLE [skip: %v]", tgt.HostIp, tgt.Service, skip)
-        case 1:
-            data = ""
-            log.Printf("%v (%v) - SAFE", tgt.HostIp, tgt.Service)
-        case 2:
-            data = ""
-            errS = err.Error()
-            if errS == "Please try again" {
-                log.Printf("%v (%v) - MISMATCH", tgt.HostIp, tgt.Service)
-            } else {
-                log.Printf("%v (%v) - ERROR [%v]", tgt.HostIp, tgt.Service, errS)
-            }
-        }
-    }
+		switch rc {
+		case 0:
+			log.Printf("%v (%v) - VULNERABLE [skip: %v]", tgt.HostIp, tgt.Service, skip)
+		case 1:
+			data = ""
+			log.Printf("%v (%v) - SAFE", tgt.HostIp, tgt.Service)
+		case 2:
+			data = ""
+			errS = err.Error()
+			if errS == "Please try again" {
+				log.Printf("%v (%v) - MISMATCH", tgt.HostIp, tgt.Service)
+			} else {
+				log.Printf("%v (%v) - ERROR [%v]", tgt.HostIp, tgt.Service, errS)
+			}
+		}
+	}
 
 	res := result{rc, data, errS, tgt.HostIp}
 	j, err := json.Marshal(res)
