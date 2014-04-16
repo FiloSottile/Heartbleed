@@ -8,7 +8,7 @@
   - file: path=/etc/service/bleed/supervise/ state=directory
   - copy: src=run.sh dest=/etc/service/bleed/run mode=0755
   - copy: src=heartbleed dest=/home/ubuntu/heartbleed
+  - service: name=svscan state=started
   - command: pkill -f heartbleed
     ignore_errors: yes
-  - service: name=svscan state=started
   - command: svc -u /etc/service/bleed

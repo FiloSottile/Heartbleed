@@ -5,6 +5,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	bleed "github.com/FiloSottile/Heartbleed/bleed"
 	"log"
 	"net/url"
 	"os"
@@ -32,6 +33,7 @@ func main() {
 	var tgt bleed.Target
 
 	flag.StringVar(&tgt.Service, "service", "https", fmt.Sprintf("Specify a service name to test (using STARTTLS if necessary). \n\t\tBesides HTTPS, currently supported services are: \n\t\t%s", bleed.Services))
+	check_cert := flag.Bool("check-cert", false, "check the server certificate")
 	flag.Parse()
 
 	if flag.NArg() < 1 {
@@ -48,15 +50,18 @@ func main() {
 		}
 	}
 
-	out, err := bleed.Heartbleed(&tgt, []byte("heartbleed.filippo.io"))
+	out, err := bleed.Heartbleed(&tgt, []byte("heartbleed.filippo.io"), !(*check_cert))
 	if err == bleed.Safe {
 		log.Printf("%v - SAFE", tgt.HostIp)
 		os.Exit(0)
+	} else if err != nil && err.Error() == "Please try again" {
+		log.Printf("%v - TRYAGAIN: %v", tgt.HostIp, err)
+		os.Exit(2)
 	} else if err != nil {
 		log.Printf("%v - ERROR: %v", tgt.HostIp, err)
 		os.Exit(2)
 	} else {
-		log.Printf("%v\n", string(out))
+		log.Printf("%v\n", out)
 		log.Printf("%v - VULNERABLE", tgt.HostIp)
 		os.Exit(1)
 	}
