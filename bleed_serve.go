@@ -59,6 +59,7 @@ type result struct {
 	Code  int    `json:"code"`
 	Data  string `json:"data"`
 	Error string `json:"error"`
+	Host  string `json:"host"`
 }
 
 type cacheReply struct {
@@ -130,57 +131,74 @@ func cacheSet(host string, state int) (err error) {
 	return
 }
 
-func bleedHandler(w http.ResponseWriter, r *http.Request) {
-	var rc int
-	var ok bool
-	var fullCheck bool
-	var cReply cacheReply
-	var data []byte
-	var err error
-	var errS string
-
+func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, skip bool) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	host := r.URL.Path[len("/bleed/"):]
-	u, err := url.Parse(host)
-	if err == nil && u.Host != "" {
-		host = u.Host
-	}
 
-	tgt := bleed.Target{
-		HostIp:  string(host),
-		Service: "https",
-	}
+    // Caching 
+    var fullCheck bool
+    var rc int
+    var err error
+    var errS string
+    data := ""
+    if cReply, ok := cacheCheck(tgt.HostIp); ok {
+        if cReply.LastUpdate < time.Now().UTC().Truncate(EXPRY).Unix() || int(cReply.Status) == 2 {
+            log.Printf("Refetching " + tgt.HostIp)
+            fullCheck = true
+        } else {
+            rc = int(cReply.Status)
+            fullCheck = false
+        }
+    }
 
-	// check cache
-	fullCheck = true
-	data = []byte("")
-	if cReply, ok = cacheCheck(tgt.HostIp); ok {
-		if cReply.LastUpdate < time.Now().UTC().Truncate(EXPRY).Unix() {
-			log.Printf("Refetching " + tgt.HostIp)
-			rc = int(cReply.Status)
-		} else {
-			fullCheck = false
-		}
-	}
-	if fullCheck {
-		data, err = bleed.Heartbleed(&tgt, PAYLOAD)
-		if err == bleed.Safe {
-			rc = SAFE
-			data = []byte("")
-			log.Printf("%v - SAFE", host)
-		} else if err != nil {
-			rc = ERROR
-			data = []byte("")
-			errS = err.Error()
-			log.Printf("%v - ERROR", host)
-		} else {
-			rc = VUNERABLE
-			log.Printf("%v - VULNERABLE", host)
-		}
-		// record cache
-		err = cacheSet(host, rc)
-	}
-	res := result{rc, string(data), errS}
+    if fullCheck {
+        data, err = bleed.Heartbleed(tgt, PAYLOAD, skip)
+
+        if err == bleed.Safe || err == bleed.Closed {
+            rc = 1
+        } else if err != nil {
+            rc = 2
+        } else {
+            rc = 0
+            // _, err := bleed.Heartbleed(tgt, PAYLOAD)
+            // if err == nil {
+            // 	// Two VULN in a row
+            // 	rc = 0
+            // } else {
+            // 	// One VULN and one not
+            // 	_, err := bleed.Heartbleed(tgt, PAYLOAD)
+            // 	if err == nil {
+            // 		// 2 VULN on 3 tries
+            // 		rc = 0
+            // 	} else {
+            // 		// 1 VULN on 3 tries
+            // 		if err == bleed.Safe {
+            // 			rc = 1
+            // 		} else {
+            // 			rc = 2
+            // 		}
+            // 	}
+            // }
+        }
+        err = cacheSet(tgt.HostIp, rc)
+
+        switch rc {
+        case 0:
+            log.Printf("%v (%v) - VULNERABLE [skip: %v]", tgt.HostIp, tgt.Service, skip)
+        case 1:
+            data = ""
+            log.Printf("%v (%v) - SAFE", tgt.HostIp, tgt.Service)
+        case 2:
+            data = ""
+            errS = err.Error()
+            if errS == "Please try again" {
+                log.Printf("%v (%v) - MISMATCH", tgt.HostIp, tgt.Service)
+            } else {
+                log.Printf("%v (%v) - ERROR [%v]", tgt.HostIp, tgt.Service, errS)
+            }
+        }
+    }
+
+	res := result{rc, data, errS, tgt.HostIp}
 	j, err := json.Marshal(res)
 	if err != nil {
 		log.Println("ERROR", err)
@@ -191,6 +209,44 @@ func bleedHandler(w http.ResponseWriter, r *http.Request) {
 
 func statusHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
+}
+
+func bleedHandler(w http.ResponseWriter, r *http.Request) {
+	host := r.URL.Path[len("/bleed/"):]
+
+	tgt := bleed.Target{
+		HostIp:  string(host),
+		Service: "https",
+	}
+	handleRequest(&tgt, w, r, true)
+}
+
+func bleedQueryHandler(w http.ResponseWriter, r *http.Request) {
+	q, ok := r.URL.Query()["u"]
+	if !ok || len(q) != 1 {
+		return
+	}
+
+	skip, ok := r.URL.Query()["skip"]
+	s := false
+	if ok && len(skip) == 1 {
+		s = true
+	}
+
+	tgt := bleed.Target{
+		HostIp:  string(q[0]),
+		Service: "https",
+	}
+
+	u, err := url.Parse(tgt.HostIp)
+	if err == nil && u.Host != "" {
+		tgt.HostIp = u.Host
+		if u.Scheme != "" {
+			tgt.Service = u.Scheme
+		}
+	}
+
+	handleRequest(&tgt, w, r, s)
 }
 
 func main() {
@@ -231,6 +287,7 @@ func main() {
 	http.HandleFunc("/", defaultHandler)
 	http.HandleFunc("/status", statusHandler)
 	http.HandleFunc("/bleed/", bleedHandler)
+	http.HandleFunc("/bleed/query", bleedQueryHandler)
 	log.Printf("Starting server on %s\n", PORT_SRV)
 	err = http.ListenAndServe(PORT_SRV, nil)
 	if err != nil {

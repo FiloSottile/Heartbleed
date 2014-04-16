@@ -1,0 +1,6 @@
+/Heartbleed
+/cli_tool
+/deploy/hosts.txt
+/deploy/*.pem
+/deploy/inventory.ini
+/deploy/heartbleed
