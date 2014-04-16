@@ -9,6 +9,7 @@ Tool usage: `Heartbleed [-service="service_name"] example.com[:443]`
         or: `Heartbleed service_name://example.com[:443]`
 
 Exit codes: `0` - SAFE; `1` - VULNERABLE; `2` - ERROR. (*recently changed*)
+See the [online FAQ](http://filippo.io/Heartbleed/faq.html) for an explanation of returned messages including `TIMEOUT` and `BROKEN PIPE`.
 
 Please note that the code is a bit of a mess, not exactly release-ready.
 

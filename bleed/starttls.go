@@ -105,6 +105,8 @@ func DoStartTLS(conn net.Conn, startType string) (err error) {
 		err = starttls_pop3(w, r)
 	case "imap":
 		err = starttls_imap(w, r)
+	case "http":
+		err = errors.New("You should check the http\"s\" site")
 	default:
 		err = errors.New("Unknown service for StartTLS")
 	}

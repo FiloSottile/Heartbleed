@@ -1,8 +1,7 @@
 {
 	"AppName": "Heartbleed",
 	"BuildConstraints": "darwin,amd64 linux,amd64",
-	"ResourcesInclude": "*.py",
 	"MainDirsExclude": "tls",
-	"PackageVersion": "0.0.3",
+	"PackageVersion": "0.2.0",
 	"ConfigVersion": "0.9"
 }

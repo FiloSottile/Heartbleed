@@ -9,5 +9,3 @@ install it with
    go install github.com/smugmug/godynamo
 
 Modify ./conf/aws-config.json to include your AWS credentials
-
-
