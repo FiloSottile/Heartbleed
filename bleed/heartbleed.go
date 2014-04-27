@@ -6,14 +6,13 @@ import (
 	_ "crypto/sha512"
 	"encoding/binary"
 	"errors"
+	"github.com/FiloSottile/Heartbleed/tls"
+	"github.com/davecgh/go-spew/spew"
 	"io"
 	"net"
 	"strings"
 	"syscall"
 	"time"
-
-	"github.com/davecgh/go-spew/spew"
-	"github.com/mozilla-services/Heartbleed/tls"
 )
 
 type Target struct {
