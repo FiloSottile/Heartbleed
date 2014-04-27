@@ -1,1 +1,0 @@
-GODYNAMO_CONF_FILE=`pwd`/conf/aws-config.json GOPATH=`pwd` go run bleed_serve_moz.go

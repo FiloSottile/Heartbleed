@@ -1,3 +1,0 @@
-github.com/smugmug/godynamo
-github.com/davecgh/go-spew/spew
--d github.com/jessevdk/go-flags

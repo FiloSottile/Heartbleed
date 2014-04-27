@@ -11,11 +11,11 @@ import (
 	"net/url"
 	"time"
 
-	mzutil "github.com/mozilla-services/Heartbleed/mzutil"
-
 	flags "github.com/jessevdk/go-flags"
-	bleed "github.com/mozilla-services/Heartbleed/bleed"
-	cache "github.com/mozilla-services/Heartbleed/cache"
+
+	bleed "github.com/FiloSottile/Heartbleed/bleed"
+	cache "github.com/FiloSottile/Heartbleed/server/cache"
+	mzutil "github.com/FiloSottile/Heartbleed/server/mzutil"
 )
 
 var PAYLOAD = []byte("heartbleed.mozilla.com")
@@ -117,8 +117,8 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 			}
 		}
 	} else {
-        rc = int(cReply.Status)
-    }
+		rc = int(cReply.Status)
+	}
 
 	// clear the data, because we don't want to expose that.
 	data = ""
@@ -193,7 +193,7 @@ func main() {
 	REDIRHOST = config.Get("redir.host", "localhost")
 	PORT_SRV = config.Get("listen.port", ":8082")
 	cache.Init(config.Get("godynamo.conf.file", "./conf/aws-config.json"),
-        config.Get("expry", "10m"))
+		config.Get("expry", "10m"))
 
 	// should take a conf arg
 

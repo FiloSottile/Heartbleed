@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/FiloSottile/Heartbleed/tls"
+	"github.com/FiloSottile/Heartbleed/bleed/tls"
 	"github.com/davecgh/go-spew/spew"
 )
 
