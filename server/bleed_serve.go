@@ -35,9 +35,14 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 	var errS string
 	var data string
 
+	cacheKey := tgt.Service + "://" + tgt.HostIp
+	if skip {
+		cacheKey += "/skip"
+	}
+
 	var cacheOk bool
 	if withCache {
-		cReply, ok := cache.Check(tgt.Service + "://" + tgt.HostIp)
+		cReply, ok := cache.Check(cacheKey)
 		if ok {
 			rc = int(cReply.Status)
 			errS = cReply.Error
@@ -93,7 +98,7 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 	}
 
 	if withCache {
-		cache.Set(tgt.Service+"://"+tgt.HostIp, rc, data, errS)
+		cache.Set(cacheKey, rc, data, errS)
 	}
 
 	res := result{rc, data, errS, tgt.HostIp}
