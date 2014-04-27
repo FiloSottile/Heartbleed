@@ -5,41 +5,17 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
-	"time"
 
-	flags "github.com/jessevdk/go-flags"
+	"github.com/docopt/docopt-go"
 
 	bleed "github.com/FiloSottile/Heartbleed/bleed"
 	cache "github.com/FiloSottile/Heartbleed/server/cache"
-	mzutil "github.com/FiloSottile/Heartbleed/server/mzutil"
 )
 
-var PAYLOAD = []byte("heartbleed.mozilla.com")
-var REDIRHOST = "http://localhost"
-var PORT_SRV = ":8082"
-var EXPRY time.Duration
-var VERSION = "0.1"
-
-/* Command line args for the app.
- */
-var opts struct {
-	ConfigFile string `short:"c" long:"config" optional:"true" description:"General Config file"`
-	Profile    string `long:"profile" optional:"true"`
-	MemProfile string `long:"memprofile" optional:"true"`
-	LogLevel   int    `short:"l" long:"loglevel" optional:"true"`
-}
-
-func defaultHandler(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, REDIRHOST, http.StatusFound)
-}
-
-func testHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "OK")
-}
+var PAYLOAD = []byte("filippo.io/Heartbleed")
 
 type result struct {
 	Code  int    `json:"code"`
@@ -48,24 +24,14 @@ type result struct {
 	Host  string `json:"host"`
 }
 
-type cacheReply struct {
-	Host       string
-	LastUpdate int64
-	Status     int64
-}
-
 func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, skip bool) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	// Caching
 	var rc int
-	var err error
 	var errS string
-	data := ""
+	var data string
 	if cReply, ok := cache.Check(tgt.HostIp); !ok {
-
-		log.Printf("Checking " + tgt.HostIp)
-		data, err = bleed.Heartbleed(tgt, PAYLOAD, skip)
+		out, err := bleed.Heartbleed(tgt, PAYLOAD, skip)
 
 		if err == bleed.Safe || err == bleed.Closed {
 			rc = 1
@@ -93,46 +59,34 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 			// 	}
 			// }
 		}
-		cerr := cache.Set(tgt.HostIp, rc)
-		if cerr != nil {
-			log.Printf("Cache Error!: %s", err.Error())
-		}
+
+		cache.Set(tgt.HostIp, rc)
 
 		switch rc {
 		case 0:
+			data = out
 			log.Printf("%v (%v) - VULNERABLE [skip: %v]", tgt.HostIp, tgt.Service, skip)
 		case 1:
-			data = ""
 			log.Printf("%v (%v) - SAFE", tgt.HostIp, tgt.Service)
 		case 2:
-			data = ""
-			if err != nil {
-				errS = err.Error()
-				if errS == "Please try again" {
-					log.Printf("%v (%v) - MISMATCH", tgt.HostIp, tgt.Service)
-				} else {
-					log.Printf("%v (%v) - ERROR [%v]", tgt.HostIp, tgt.Service, errS)
-				}
+			errS = err.Error()
+			if errS == "Please try again" {
+				log.Printf("%v (%v) - MISMATCH", tgt.HostIp, tgt.Service)
+			} else {
+				log.Printf("%v (%v) - ERROR [%v]", tgt.HostIp, tgt.Service, errS)
 			}
 		}
 	} else {
 		rc = int(cReply.Status)
 	}
 
-	// clear the data, because we don't want to expose that.
-	data = ""
-
 	res := result{rc, data, errS, tgt.HostIp}
 	j, err := json.Marshal(res)
 	if err != nil {
-		log.Println("ERROR", err)
+		log.Println("[json] ERROR:", err)
 	} else {
 		w.Write(j)
 	}
-}
-
-func statusHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("OK"))
 }
 
 func bleedHandler(w http.ResponseWriter, r *http.Request) {
@@ -173,35 +127,41 @@ func bleedQueryHandler(w http.ResponseWriter, r *http.Request) {
 	handleRequest(&tgt, w, r, s)
 }
 
+var Usage = `Heartbleed test server.
+
+Usage:
+  HBserver --redir-host=<host> [--listen=<addr:port> --expiry=<duration>]
+  HBserver -h | --help
+  HBserver --version
+
+Options:
+  --redir-host HOST   Redirect requests to "/" to this host.
+  --listen ADDR:PORT  Listen and serve requests to this address:port [default: :8082].
+  --expiry DURATION   Expire records after this period [default: 10m]
+                      Uses Go's parse syntax
+                      e.g. 10m = 10 minutes, 600s = 600 seconds, 1d = 1 day, etc.
+  -h --help           Show this screen.
+  --version           Show version.`
+
 func main() {
+	arguments, _ := docopt.Parse(Usage, nil, true, "HBserver 0.3", false)
 
-	var err error
+	cache.Init(arguments["--expiry"].(string))
 
-	// Get the configurations
-	flags.Parse(&opts)
-	if opts.ConfigFile == "" {
-		opts.ConfigFile = "config.ini"
-	}
-	config, err := mzutil.ReadMzConfig(opts.ConfigFile)
-	if err != nil {
-		log.Fatal("Could not read config file " +
-			opts.ConfigFile + " " +
-			err.Error())
-	}
-	config.SetDefault("VERSION", "0.5")
-	REDIRHOST = config.Get("redir.host", "localhost")
-	PORT_SRV = config.Get("listen.port", ":8082")
-	cache.Init(config.Get("expry", "10m"))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, arguments["--redir-host"].(string), http.StatusFound)
+	})
 
-	// should take a conf arg
-
-	http.HandleFunc("/", defaultHandler)
 	// Required for some ELBs
-	http.HandleFunc("/status", statusHandler)
+	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("OK"))
+	})
+
 	http.HandleFunc("/bleed/", bleedHandler)
 	http.HandleFunc("/bleed/query", bleedQueryHandler)
-	log.Printf("Starting server on %s\n", PORT_SRV)
-	err = http.ListenAndServe(PORT_SRV, nil)
+
+	log.Printf("Starting server on %s\n", arguments["--listen"].(string))
+	err := http.ListenAndServe(arguments["--listen"].(string), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

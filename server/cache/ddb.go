@@ -137,11 +137,11 @@ func Set(host string, state int) error {
 
 	body, code, err := putr.EndpointReq()
 	if err != nil {
-		fmt.Printf("[cache] ERROR: put failed %v, %s", err, body)
+		log.Printf("[cache] ERROR: put failed %v, %s", err, body)
 		return err
 	}
 	if code != http.StatusOK {
-		fmt.Printf("[cache] ERROR: put failed %v, %s", code, body)
+		log.Printf("[cache] ERROR: put failed %v, %s", code, body)
 		return fmt.Errorf("put failed: code %d", code)
 	}
 
