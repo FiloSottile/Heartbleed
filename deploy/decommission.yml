@@ -1,0 +1,29 @@
+- hosts: bleed-old
+  remote_user: ubuntu
+  vars:
+    logs_host: ec2-54-237-188-98.compute-1.amazonaws.com
+  tasks:
+    - copy: src=bleed_logs.pem dest=.ssh/id_rsa mode=0600
+    - command: svc -d /etc/service/bleed
+      sudo: yes
+    - command: pkill -f heartbleed
+      ignore_errors: yes
+      sudo: yes
+    - shell: ssh-keyscan -t ecdsa,rsa,dsa {{logs_host}} >> ~/.ssh/known_hosts;
+    - command: rsync heartbleed.log ubuntu@{{logs_host}}:bleed/{{inventory_hostname}}.log
+    - command: shutdown -h now
+      sudo: yes
+
+- hosts: ref-old
+  remote_user: ubuntu
+  vars:
+    logs_host: ec2-54-237-188-98.compute-1.amazonaws.com
+  tasks:
+    - copy: src=bleed_logs.pem dest=.ssh/id_rsa mode=0600
+    - command: pkill -f logger
+      ignore_errors: yes
+      sudo: yes
+    - shell: ssh-keyscan -t ecdsa,rsa,dsa {{logs_host}} >> ~/.ssh/known_hosts;
+    - command: rsync referrals.log ubuntu@{{logs_host}}:ref/{{inventory_hostname}}.log
+    - command: shutdown -h now
+      sudo: yes
