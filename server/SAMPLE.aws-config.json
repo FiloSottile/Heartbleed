@@ -1,0 +1,21 @@
+{
+    "extends": [],
+    "services": {
+        "default_settings": {
+            "params": {
+                "access_key_id":"XXX",
+                "secret_access_key":"XXX"
+            }
+        },
+        "dynamo_db": {
+            "host": "dynamodb.us-east-1.amazonaws.com",
+            "zone": "us-east-1",
+            "scheme": "https",
+            "port": 443,
+            "keepalive": true,
+            "iam": {
+                "use_iam": false
+            }
+        }
+    }
+}

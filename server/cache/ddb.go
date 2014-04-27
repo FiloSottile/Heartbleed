@@ -23,20 +23,19 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
-	"github.com/smugmug/godynamo/conf"
-	"github.com/smugmug/godynamo/conf_file"
+	conf "github.com/smugmug/godynamo/conf"
+	conf_file "github.com/smugmug/godynamo/conf_file"
 	ep "github.com/smugmug/godynamo/endpoint"
 	get "github.com/smugmug/godynamo/endpoints/get_item"
 	put "github.com/smugmug/godynamo/endpoints/put_item"
 	keepalive "github.com/smugmug/godynamo/keepalive"
 )
 
-var CACHE_TAB = "mozHeartbleed"
-var expry time.Duration
+var CACHE_TAB = "Heartbleed"
+var expiry time.Duration
 
 type CacheReply struct {
 	Host       string
@@ -45,15 +44,9 @@ type CacheReply struct {
 }
 
 /* Initialize the cache layer.
- * configPath - Path to the godynamo JSON config file.
  * expiration - Go standard duration string, defaults to '10m'
- *
- * This forces the Go Dynamo Config path into an environment var
- * so that its preferred config reader can find it. Leave blank if
- * you want this to use a config file in the default places.
  */
-func Init(configPath string, expiration string) (err error) {
-	os.Setenv("GODYNAMO_CONF_FILE", configPath)
+func Init(expiration string) {
 	conf_file.Read()
 
 	if conf.Vals.Initialized == false {
@@ -61,18 +54,17 @@ func Init(configPath string, expiration string) (err error) {
 	}
 
 	if conf.Vals.Network.DynamoDB.KeepAlive {
-        log.Printf("Cache Info: Launching background DynamoDB keepalive")
+		log.Printf("[cache] INFO: Launching background DynamoDB keepalive")
 		go keepalive.KeepAlive([]string{conf.Vals.Network.DynamoDB.URL})
 	}
 
-	expry, err = time.ParseDuration(expiration)
-    if err != nil {
-        log.Printf("Cache Warn: Could not parse expry string. Expiring after 10m [%s]", err.Error())
-        expry = time.Minute * 10
-    }
-
-	// if we were using IAM, put that code here.
-	return
+	exp, err := time.ParseDuration(expiration)
+	if err != nil {
+		log.Printf("[cache] WARN: Could not parse expiry string [%s]. Expiring after 10m.", err.Error())
+		expiry = time.Minute * 10
+	} else {
+		expiry = exp
+	}
 }
 
 /* Fetch the record from the Cache.
@@ -80,71 +72,79 @@ func Init(configPath string, expiration string) (err error) {
  * returns the record and if the record should be considered "OK" to use.
  * An OK record is a valid, non-expired cache stored entry.
  */
-func Check(host string) (reply CacheReply, ok bool) {
-	var getr get.Request
-	var gr get.Response
-
-	ok = true
-	getr.TableName = CACHE_TAB
-	getr.Key = make(ep.Item)
+func Check(host string) (CacheReply, bool) {
+	getr := get.Request{
+		TableName: CACHE_TAB,
+		Key:       make(ep.Item),
+	}
 	getr.Key["hostname"] = ep.AttributeValue{S: host}
 	body, code, err := getr.EndpointReq()
-	if err != nil || code != http.StatusOK {
-		if err != nil {
-			log.Printf("Cache Error: %s\n", err.Error())
-		}
-		ok = false
-		return
+	if err != nil {
+		log.Printf("[cache] ERROR: %s", err.Error())
+		return CacheReply{}, false
 	}
-	// get the time from the body,
-	//log.Printf("####CACHE_GET: %s %d\n", string(body), len(body))
-	if len(body) < 3 {
-        // record not found
-		ok = false
-		return reply, ok
+	if code != http.StatusOK {
+		return CacheReply{}, false
 	}
 
+	// get the time from the body
+	// log.Printf("####CACHE_GET: %s %d\n", string(body), len(body))
+	if len(body) < 3 {
+		// record not found
+		return CacheReply{}, false
+	}
+
+	var gr get.Response
+	var reply CacheReply
 	if err = json.Unmarshal([]byte(body), &gr); err == nil {
-		reply.LastUpdate, err = strconv.ParseInt(gr.Item["Mtime"].N, 10, 64)
-		if err != nil {
-            // unparsable time
-			log.Printf("Cache Error: Bad Record %s, %s", host, err.Error())
-			ok = false
-			return
-		}
-        if reply.LastUpdate < time.Now().UTC().Truncate(expry).Unix(){
-            // record has expired.
-            ok = false
-        }
 		reply.Status, err = strconv.ParseInt(gr.Item["Status"].N, 10, 64)
 		if err != nil {
-            //unparsable status
-			log.Printf("Cache Error: Bad Record %s, %s", host, err.Error())
-			ok = false
-			return
+			// unparsable status
+			log.Printf("[cache] ERROR: Bad Record %s, %s", host, err.Error())
+			return CacheReply{}, false
 		}
+
 		reply.Host = gr.Item["hostname"].S
-		//log.Printf("gr %+v", reply)
+
+		reply.LastUpdate, err = strconv.ParseInt(gr.Item["Mtime"].N, 10, 64)
+		if err != nil {
+			// unparsable time
+			log.Printf("[cache] ERROR: Bad Record %s, %s", host, err.Error())
+			return CacheReply{}, false
+		}
+		if reply.LastUpdate < time.Now().UTC().Truncate(expiry).Unix() {
+			// record has expired.
+			return reply, false
+		}
+		// log.Printf("gr %+v", reply)
 	}
-	return
+
+	return reply, true
 }
 
 /* Set the state of the host in the cache
  *
  */
-func Set(host string, state int) (err error) {
-	var putr put.Request
-	//var status string
+func Set(host string, state int) error {
+	putr := put.Request{
+		TableName: CACHE_TAB,
+		Item:      make(ep.Item),
+	}
 
-	putr.TableName = CACHE_TAB
-	putr.Item = make(ep.Item)
 	putr.Item["hostname"] = ep.AttributeValue{S: host}
 	putr.Item["Mtime"] = ep.AttributeValue{N: strconv.FormatInt(time.Now().UTC().Unix(), 10)}
 	putr.Item["Status"] = ep.AttributeValue{N: strconv.FormatInt(int64(state), 10)}
+
 	body, code, err := putr.EndpointReq()
-	if err != nil || code != http.StatusOK {
-		fmt.Printf("Cache Error: put failed %d, %v, %s", code, err, body)
+	if err != nil {
+		fmt.Printf("[cache] ERROR: put failed %v, %s", err, body)
+		return err
 	}
-	//log.Printf("####CACHE_SET: %s\n", string(body))
-	return
+	if code != http.StatusOK {
+		fmt.Printf("[cache] ERROR: put failed %v, %s", code, body)
+		return fmt.Errorf("put failed: code %d", code)
+	}
+
+	// log.Printf("####CACHE_SET: %s\n", string(body))
+	return nil
 }

@@ -21,7 +21,6 @@ import (
 var PAYLOAD = []byte("heartbleed.mozilla.com")
 var REDIRHOST = "http://localhost"
 var PORT_SRV = ":8082"
-var CACHE_TAB = "mozHeartbleed"
 var EXPRY time.Duration
 var VERSION = "0.1"
 
@@ -192,8 +191,7 @@ func main() {
 	config.SetDefault("VERSION", "0.5")
 	REDIRHOST = config.Get("redir.host", "localhost")
 	PORT_SRV = config.Get("listen.port", ":8082")
-	cache.Init(config.Get("godynamo.conf.file", "./conf/aws-config.json"),
-		config.Get("expry", "10m"))
+	cache.Init(config.Get("expry", "10m"))
 
 	// should take a conf arg
 
