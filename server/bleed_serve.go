@@ -24,6 +24,11 @@ type result struct {
 }
 
 func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, skip bool) {
+	if tgt.HostIp == "" {
+		// tens of empty requests per minute, mah...
+		return
+	}
+
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	var rc int
@@ -32,7 +37,7 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 
 	var cacheOk bool
 	if withCache {
-		cReply, ok := cache.Check(tgt.HostIp)
+		cReply, ok := cache.Check(tgt.Service + "://" + tgt.HostIp)
 		if ok {
 			rc = int(cReply.Status)
 			errS = cReply.Error
@@ -88,7 +93,7 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 	}
 
 	if withCache {
-		cache.Set(tgt.HostIp, rc, data, errS)
+		cache.Set(tgt.Service+"://"+tgt.HostIp, rc, data, errS)
 	}
 
 	res := result{rc, data, errS, tgt.HostIp}
