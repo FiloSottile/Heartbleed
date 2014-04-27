@@ -5,10 +5,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	bleed "github.com/FiloSottile/Heartbleed/bleed"
 	"log"
 	"net/http"
 	"net/url"
+
+	bleed "github.com/FiloSottile/Heartbleed/bleed"
 )
 
 var PAYLOAD = []byte("heartbleed.filippo.io")
