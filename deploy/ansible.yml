@@ -8,8 +8,10 @@
   - file: path=/etc/service/bleed/supervise/ state=directory
   - copy: src=run.sh dest=/etc/service/bleed/run mode=0755
   - copy: src=HBserver dest=/home/ubuntu/HBserver
-  - copy: src=aws-config.json dest=/home/ubuntu/.aws-config.json
+  - copy: src=aws-config.json dest=/etc/aws-config.json
   - service: name=svscan state=started
-  - command: pkill -f heartbleed HBserver
+  - command: pkill -f heartbleed
+    ignore_errors: yes
+  - command: pkill -f HBserver
     ignore_errors: yes
   - command: svc -u /etc/service/bleed
