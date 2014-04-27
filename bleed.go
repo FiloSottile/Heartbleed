@@ -1,3 +1,5 @@
+//+build skip
+
 package main
 
 import (
@@ -7,6 +9,8 @@ import (
 	"log"
 	"net/url"
 	"os"
+
+	bleed "github.com/mozilla-services/Heartbleed/bleed"
 )
 
 var usageMessage = `This is a tool for detecting OpenSSL Heartbleed vulnerability (CVE-2014-0160).
