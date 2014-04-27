@@ -6,11 +6,14 @@
     - copy: src=bleed_logs.pem dest=.ssh/id_rsa mode=0600
     - command: svc -d /etc/service/bleed
       sudo: yes
-    - command: pkill -f heartbleed HBserver
+    - command: pkill -f heartbleed
+      ignore_errors: yes
+      sudo: yes
+    - command: pkill -f HBserver
       ignore_errors: yes
       sudo: yes
     - shell: ssh-keyscan -t ecdsa,rsa,dsa {{logs_host}} >> ~/.ssh/known_hosts;
-    - command: rsync heartbleed.log ubuntu@{{logs_host}}:bleed/{{inventory_hostname}}.log
+    - command: rsync --partial heartbleed.log ubuntu@{{logs_host}}:bleed/{{inventory_hostname}}.log
     - command: shutdown -h now
       sudo: yes
 
@@ -24,6 +27,6 @@
       ignore_errors: yes
       sudo: yes
     - shell: ssh-keyscan -t ecdsa,rsa,dsa {{logs_host}} >> ~/.ssh/known_hosts;
-    - command: rsync referrals.log ubuntu@{{logs_host}}:ref/{{inventory_hostname}}.log
+    - command: rsync logger_linux_amd64/referrals.log ubuntu@{{logs_host}}:ref/{{inventory_hostname}}.log
     - command: shutdown -h now
       sudo: yes
