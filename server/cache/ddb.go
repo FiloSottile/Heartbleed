@@ -8,12 +8,14 @@
  * this package.
  *
  * The dynamo table we use has the following structure:
- *  primary Hash key: hostname
- *      No range key
- *      No secondary indexes.
+ *  Primary Hash key: hostname
+ *  No range key
+ *  No secondary indexes.
  *  columns:
  *      Mtime   - last access time
  *      Status  - status return value
+ *      Data    - memory dump string
+ *      Error   - error string value
  *
  */
 package cache
@@ -41,6 +43,8 @@ type CacheReply struct {
 	Host       string
 	LastUpdate int64
 	Status     int64
+	Data       string
+	Error      string
 }
 
 /* Initialize the cache layer.
@@ -105,6 +109,14 @@ func Check(host string) (CacheReply, bool) {
 		}
 
 		reply.Host = gr.Item["hostname"].S
+		reply.Error = gr.Item["Error"].S
+		if reply.Error == "---" {
+			reply.Error = ""
+		}
+		reply.Data = gr.Item["Data"].S
+		if reply.Data == "---" {
+			reply.Data = ""
+		}
 
 		reply.LastUpdate, err = strconv.ParseInt(gr.Item["Mtime"].N, 10, 64)
 		if err != nil {
@@ -125,7 +137,14 @@ func Check(host string) (CacheReply, bool) {
 /* Set the state of the host in the cache
  *
  */
-func Set(host string, state int) error {
+func Set(host string, state int, data, errS string) error {
+	if data == "" {
+		data = "---"
+	}
+	if errS == "" {
+		errS = "---"
+	}
+
 	putr := put.Request{
 		TableName: CACHE_TAB,
 		Item:      make(ep.Item),
@@ -134,6 +153,8 @@ func Set(host string, state int) error {
 	putr.Item["hostname"] = ep.AttributeValue{S: host}
 	putr.Item["Mtime"] = ep.AttributeValue{N: strconv.FormatInt(time.Now().UTC().Unix(), 10)}
 	putr.Item["Status"] = ep.AttributeValue{N: strconv.FormatInt(int64(state), 10)}
+	putr.Item["Data"] = ep.AttributeValue{S: data}
+	putr.Item["Error"] = ep.AttributeValue{S: errS}
 
 	body, code, err := putr.EndpointReq()
 	if err != nil {

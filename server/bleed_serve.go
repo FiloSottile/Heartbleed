@@ -35,6 +35,8 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 		cReply, ok := cache.Check(tgt.HostIp)
 		if ok {
 			rc = int(cReply.Status)
+			errS = cReply.Error
+			data = cReply.Data
 			cacheOk = true
 		}
 	}
@@ -69,10 +71,6 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 			// }
 		}
 
-		if withCache {
-			cache.Set(tgt.HostIp, rc)
-		}
-
 		switch rc {
 		case 0:
 			data = out
@@ -87,6 +85,10 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 				log.Printf("%v (%v) - ERROR [%v]", tgt.HostIp, tgt.Service, errS)
 			}
 		}
+	}
+
+	if withCache {
+		cache.Set(tgt.HostIp, rc, data, errS)
 	}
 
 	res := result{rc, data, errS, tgt.HostIp}
