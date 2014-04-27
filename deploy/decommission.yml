@@ -6,7 +6,7 @@
     - copy: src=bleed_logs.pem dest=.ssh/id_rsa mode=0600
     - command: svc -d /etc/service/bleed
       sudo: yes
-    - command: pkill -f heartbleed
+    - command: pkill -f heartbleed HBserver
       ignore_errors: yes
       sudo: yes
     - shell: ssh-keyscan -t ecdsa,rsa,dsa {{logs_host}} >> ~/.ssh/known_hosts;

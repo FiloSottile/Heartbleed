@@ -2,5 +2,5 @@
 
 cd /home/ubuntu
 
-exec sudo ./heartbleed 2>&1 | tee -a ./heartbleed.log
+exec sudo ./HBserver --redir-host="https://filippo.io/Heartbleed" --listen=":80" --expiry="10m" 2>&1 | tee -a ./heartbleed.log
 
