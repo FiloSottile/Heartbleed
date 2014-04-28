@@ -124,7 +124,7 @@ func Check(host string) (CacheReply, bool) {
 			log.Printf("[cache] ERROR: Bad Record %s, %s", host, err.Error())
 			return CacheReply{}, false
 		}
-		if reply.LastUpdate < time.Now().UTC().Truncate(expiry).Unix() {
+		if reply.LastUpdate < time.Now().UTC().Add(-expiry).Unix() {
 			// record has expired.
 			return reply, false
 		}
