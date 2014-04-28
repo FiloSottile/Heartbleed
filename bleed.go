@@ -55,8 +55,7 @@ func main() {
 		if err.Error() == "Please try again" {
 			log.Printf("%v - TRYAGAIN: %v", tgt.HostIp, err)
 			os.Exit(2)
-		}
-	 	else {
+		} else {
 			log.Printf("%v - ERROR: %v", tgt.HostIp, err)
 			os.Exit(2)
 		}
