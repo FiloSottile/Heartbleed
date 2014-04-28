@@ -97,7 +97,7 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 		}
 	}
 
-	if withCache {
+	if withCache && !cacheOk {
 		cache.Set(cacheKey, rc, data, errS)
 	}
 
