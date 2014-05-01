@@ -12,9 +12,11 @@ import (
 	cache "github.com/FiloSottile/Heartbleed/server/cache"
 )
 
-var PAYLOAD = []byte("filippo.io/Heartbleed")
-
-var withCache bool
+var (
+	PAYLOAD   = []byte("filippo.io/Heartbleed")
+	withCache = false
+	cacheData = false
+)
 
 type result struct {
 	Code  int    `json:"code"`
@@ -98,7 +100,15 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 	}
 
 	if withCache && !cacheOk {
-		cache.Set(cacheKey, rc, data, errS)
+		/* Storing the data returned from the site is problematic for a
+		   number of reasons. While it may be valuable in certain
+		   circumstances, it's not a good idea to store and return this
+		   data to arbitrary parties. */
+		cdata := ""
+		if cacheData {
+			cdata = data
+		}
+		cache.Set(cacheKey, rc, cdata, errS)
 	}
 
 	res := result{rc, data, errS, tgt.HostIp}
@@ -151,7 +161,7 @@ func bleedQueryHandler(w http.ResponseWriter, r *http.Request) {
 var Usage = `Heartbleed test server.
 
 Usage:
-  HBserver --redir-host=<host> [--listen=<addr:port> --expiry=<duration>]
+  HBserver --redir-host=<host> [--listen=<addr:port> --expiry=<duration> --cache-data]
   HBserver -h | --help
   HBserver --version
 
@@ -162,6 +172,8 @@ Options:
                       Uses Go's parse syntax
                       e.g. 10m = 10 minutes, 600s = 600 seconds, 1d = 1 day, etc.
   -h --help           Show this screen.
+  --cache-data        Cache the data. (Not recommended. May contain private
+                      info or other unwanted data.)
   --version           Show version.`
 
 func main() {
@@ -169,6 +181,15 @@ func main() {
 
 	if arguments["--expiry"] != nil {
 		withCache = true
+	}
+
+	if arguments["--cache-data"] != nil {
+		cacheData = true
+	}
+
+	// this was returning nil in later code. Best be certain it's defined.
+	if _, ok := arguments["--listen"]; !ok {
+		arguments["--listen"] = ":8082"
 	}
 
 	if withCache {
