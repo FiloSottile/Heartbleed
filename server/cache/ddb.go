@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
@@ -150,8 +151,13 @@ func Set(host string, state int, data, errS string) error {
 		Item:      make(ep.Item),
 	}
 
+	// Randomize the exp time by inserting the value up to "expiry" in the past
+	// THIS MEANS THAT ITEMS ARE CACHED FOR A TIME FROM 0 TO expiry
+	rnd := rand.Int63n(int64(expiry))
+	mtime := time.Now().UTC().Add(-time.Duration(rnd)).Unix()
+
 	putr.Item["hostname"] = ep.AttributeValue{S: host}
-	putr.Item["Mtime"] = ep.AttributeValue{N: strconv.FormatInt(time.Now().UTC().Unix(), 10)}
+	putr.Item["Mtime"] = ep.AttributeValue{N: strconv.FormatInt(mtime, 10)}
 	putr.Item["Status"] = ep.AttributeValue{N: strconv.FormatInt(int64(state), 10)}
 	putr.Item["Data"] = ep.AttributeValue{S: data}
 	putr.Item["Error"] = ep.AttributeValue{S: errS}
