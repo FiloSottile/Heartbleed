@@ -173,10 +173,10 @@ h1 {
               </div>
               <button type="submit" class="btn btn-primary btn-lg" id="go">Go!</button>
             </div>
-              <label class="checkbox" for="ignore-cert">
+              <!-- <label class="checkbox" for="ignore-cert">
                   <input type="checkbox" value="" id="ignore-cert" data-toggle="checkbox">
                   Advanced (might cause false results): ignore certificates
-              </label>
+              </label> -->
             </form>
         </p>
         <h3 class="bg-success bleed bleed-safe">
@@ -265,9 +265,9 @@ $( "form" ).submit(function( event ) {
     $(".bleed").hide()
     NProgress.start();
     get = {u: host};
-    if ($('#ignore-cert').is(':checked')) {
+    // if ($('#ignore-cert').is(':checked')) {
         get.skip = 1
-    }
+    // }
     $.getJSON( "https://hbelb.filippo.io/bleed/query", get, function( data ) {
         $('button').removeAttr('disabled')
         NProgress.done();
