@@ -92,7 +92,7 @@ func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (string, error) {
 	}
 
 	res := make(chan error)
-	closeNotifySent := false
+	closeNotifySent := make(chan bool)
 	go func() {
 		// Needed to process the incoming heartbeat
 		_, err := conn.Read(nil)
@@ -103,9 +103,16 @@ func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (string, error) {
 			return
 		}
 
-		if err == io.EOF || (err != nil && err.Error() == "EOF") ||
-			(ok && nerr.Err == syscall.ECONNRESET) {
-			if closeNotifySent && (err == io.EOF || err.Error() == "EOF") {
+		if err == io.EOF || (err != nil && err.Error() == "EOF") || (ok && nerr.Err == syscall.ECONNRESET) {
+			var closed bool
+			select {
+				case <-closeNotifySent:
+					closed = true
+				default:
+					closed = false
+			}
+
+			if closed && (err == io.EOF || err.Error() == "EOF") {
 				// the connection terminated normally
 				res <- Safe
 				return
@@ -123,7 +130,7 @@ func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (string, error) {
 		// Check if the server is still alive
 		time.Sleep(3 * time.Second)
 		conn.SendCloseNotify()
-		closeNotifySent = true
+		closeNotifySent <- true
 	}()
 
 	select {
