@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"os"
 
-	bleed "github.com/FiloSottile/Heartbleed/bleed"
+	"github.com/FiloSottile/Heartbleed/heartbleed"
 )
 
 var usageMessage = `This is a tool for detecting OpenSSL Heartbleed vulnerability (CVE-2014-0160).
@@ -27,9 +27,9 @@ func usage() {
 }
 
 func main() {
-	var tgt bleed.Target
+	var tgt heartbleed.Target
 
-	flag.StringVar(&tgt.Service, "service", "https", fmt.Sprintf("Specify a service name to test (using STARTTLS if necessary). \n\t\tBesides HTTPS, currently supported services are: \n\t\t%s", bleed.Services))
+	flag.StringVar(&tgt.Service, "service", "https", fmt.Sprintf("Specify a service name to test (using STARTTLS if necessary). \n\t\tBesides HTTPS, currently supported services are: \n\t\t%s", heartbleed.Services))
 	check_cert := flag.Bool("check-cert", false, "check the server certificate")
 	flag.Parse()
 
@@ -47,8 +47,8 @@ func main() {
 		}
 	}
 
-	out, err := bleed.Heartbleed(&tgt, []byte("heartbleed.filippo.io"), !(*check_cert))
-	if err == bleed.Safe {
+	out, err := heartbleed.Heartbleed(&tgt, []byte("heartbleed.filippo.io"), !(*check_cert))
+	if err == heartbleed.Safe {
 		log.Printf("%v - SAFE", tgt.HostIp)
 		os.Exit(0)
 	} else if err != nil {
