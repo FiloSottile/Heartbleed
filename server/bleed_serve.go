@@ -152,6 +152,7 @@ var Usage = `Heartbleed test server.
 
 Usage:
   HBserver --redir-host=<host> [--listen=<addr:port> --expiry=<duration>]
+           [--key=<key> --cert=<cert>]
   HBserver -h | --help
   HBserver --version
 
@@ -161,6 +162,8 @@ Options:
   --expiry DURATION   ENABLE CACHING. Expire records after this period.
                       Uses Go's parse syntax
                       e.g. 10m = 10 minutes, 600s = 600 seconds, 1d = 1 day, etc.
+  --key KEY           TLS key .pem file -- enable TLS
+  --cert CERT         TLS cert .pem file -- enable TLS
   -h --help           Show this screen.
   --version           Show version.`
 
@@ -187,9 +190,18 @@ func main() {
 	http.HandleFunc("/bleed/", bleedHandler)
 	http.HandleFunc("/bleed/query", bleedQueryHandler)
 
-	log.Printf("Starting server on %s\n", arguments["--listen"].(string))
-	err := http.ListenAndServe(arguments["--listen"].(string), nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
+	var err error
+	if arguments["--key"] != nil && arguments["--cert"] != nil {
+		log.Printf("Starting server on %s\n", arguments["--listen"].(string))
+		log.Fatal("ListenAndServe: ", http.ListenAndServe(
+			arguments["--listen"].(string), nil,
+		))
+	} else {
+		log.Printf("Starting TLS server on %s\n", arguments["--listen"].(string))
+		log.Fatal("ListenAndServeTLS: ", http.ListenAndServeTLS(
+			arguments["--listen"].(string),
+			arguments["--cert"].(string), arguments["--key"].(string),
+			nil,
+		))
 	}
 }
