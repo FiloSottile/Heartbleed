@@ -1,0 +1,15 @@
+[submodule "server/_vendor/src/github.com/howeyc/fsnotify"]
+	path = server/_vendor/src/github.com/howeyc/fsnotify
+	url = https://github.com/howeyc/fsnotify
+[submodule "server/_vendor/src/github.com/smugmug/goawsroles"]
+	path = server/_vendor/src/github.com/smugmug/goawsroles
+	url = https://github.com/smugmug/goawsroles
+[submodule "server/_vendor/src/github.com/smugmug/godynamo"]
+	path = server/_vendor/src/github.com/smugmug/godynamo
+	url = https://github.com/smugmug/godynamo
+[submodule "server/_vendor/src/github.com/davecgh/go-spew"]
+	path = server/_vendor/src/github.com/davecgh/go-spew
+	url = https://github.com/davecgh/go-spew
+[submodule "server/_vendor/src/github.com/docopt/docopt-go"]
+	path = server/_vendor/src/github.com/docopt/docopt-go
+	url = https://github.com/docopt/docopt-go

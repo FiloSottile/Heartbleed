@@ -18,7 +18,7 @@
  *      Error   - error string value
  *
  */
-package cache
+package hbcache
 
 import (
 	"encoding/json"
@@ -29,12 +29,13 @@ import (
 	"strconv"
 	"time"
 
-	conf "github.com/smugmug/godynamo/conf"
-	conf_file "github.com/smugmug/godynamo/conf_file"
-	ep "github.com/smugmug/godynamo/endpoint"
-	get "github.com/smugmug/godynamo/endpoints/get_item"
-	put "github.com/smugmug/godynamo/endpoints/put_item"
-	keepalive "github.com/smugmug/godynamo/keepalive"
+	"github.com/smugmug/godynamo/conf"
+	"github.com/smugmug/godynamo/conf_file"
+	"github.com/smugmug/godynamo/endpoints/get_item"
+	"github.com/smugmug/godynamo/endpoints/put_item"
+	"github.com/smugmug/godynamo/keepalive"
+	"github.com/smugmug/godynamo/types/attributevalue"
+	"github.com/smugmug/godynamo/types/item"
 )
 
 var CACHE_TAB = "Heartbleed"
@@ -78,11 +79,11 @@ func Init(expiration string) {
  * An OK record is a valid, non-expired cache stored entry.
  */
 func Check(host string) (CacheReply, bool) {
-	getr := get.Request{
+	getr := get_item.Request{
 		TableName: CACHE_TAB,
-		Key:       make(ep.Item),
+		Key:       make(item.Key),
 	}
-	getr.Key["hostname"] = ep.AttributeValue{S: host}
+	getr.Key["hostname"] = &attributevalue.AttributeValue{S: host}
 	body, code, err := getr.EndpointReq()
 	if err != nil {
 		log.Printf("[cache] ERROR: %s", err.Error())
@@ -99,7 +100,7 @@ func Check(host string) (CacheReply, bool) {
 		return CacheReply{}, false
 	}
 
-	var gr get.Response
+	var gr get_item.Response
 	var reply CacheReply
 	if err = json.Unmarshal([]byte(body), &gr); err == nil {
 		reply.Status, err = strconv.ParseInt(gr.Item["Status"].N, 10, 64)
@@ -146,9 +147,9 @@ func Set(host string, state int, data, errS string) error {
 		errS = "---"
 	}
 
-	putr := put.Request{
+	putr := put_item.Request{
 		TableName: CACHE_TAB,
-		Item:      make(ep.Item),
+		Item:      make(item.Item),
 	}
 
 	// Randomize the exp time by inserting the value up to "expiry" in the past
@@ -156,11 +157,11 @@ func Set(host string, state int, data, errS string) error {
 	rnd := rand.Int63n(int64(expiry))
 	mtime := time.Now().UTC().Add(-time.Duration(rnd)).Unix()
 
-	putr.Item["hostname"] = ep.AttributeValue{S: host}
-	putr.Item["Mtime"] = ep.AttributeValue{N: strconv.FormatInt(mtime, 10)}
-	putr.Item["Status"] = ep.AttributeValue{N: strconv.FormatInt(int64(state), 10)}
-	putr.Item["Data"] = ep.AttributeValue{S: data}
-	putr.Item["Error"] = ep.AttributeValue{S: errS}
+	putr.Item["hostname"] = &attributevalue.AttributeValue{S: host}
+	putr.Item["Mtime"] = &attributevalue.AttributeValue{N: strconv.FormatInt(mtime, 10)}
+	putr.Item["Status"] = &attributevalue.AttributeValue{N: strconv.FormatInt(int64(state), 10)}
+	putr.Item["Data"] = &attributevalue.AttributeValue{S: data}
+	putr.Item["Error"] = &attributevalue.AttributeValue{S: errS}
 
 	body, code, err := putr.EndpointReq()
 	if err != nil {

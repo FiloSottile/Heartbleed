@@ -8,8 +8,8 @@ import (
 
 	"github.com/docopt/docopt-go"
 
-	bleed "github.com/FiloSottile/Heartbleed/bleed"
-	cache "github.com/FiloSottile/Heartbleed/server/cache"
+	"github.com/FiloSottile/Heartbleed/heartbleed"
+	"github.com/FiloSottile/Heartbleed/server/hbcache"
 )
 
 var PAYLOAD = []byte("filippo.io/Heartbleed")
@@ -23,7 +23,7 @@ type result struct {
 	Host  string `json:"host"`
 }
 
-func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, skip bool) {
+func handleRequest(tgt *heartbleed.Target, w http.ResponseWriter, r *http.Request, skip bool) {
 	if tgt.HostIp == "" {
 		// tens of empty requests per minute, mah...
 		return
@@ -42,7 +42,7 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 
 	var cacheOk bool
 	if withCache {
-		cReply, ok := cache.Check(cacheKey)
+		cReply, ok := hbcache.Check(cacheKey)
 		if ok {
 			rc = int(cReply.Status)
 			errS = cReply.Error
@@ -52,9 +52,9 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 	}
 
 	if !withCache || !cacheOk {
-		out, err := bleed.Heartbleed(tgt, PAYLOAD, skip)
+		out, err := heartbleed.Heartbleed(tgt, PAYLOAD, skip)
 
-		if err == bleed.Safe || err == bleed.Closed {
+		if err == heartbleed.Safe || err == heartbleed.Closed {
 			rc = 1
 		} else if err != nil {
 			rc = 2
@@ -98,7 +98,7 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 	}
 
 	if withCache && !cacheOk {
-		cache.Set(cacheKey, rc, data, errS)
+		hbcache.Set(cacheKey, rc, data, errS)
 	}
 
 	res := result{rc, data, errS, tgt.HostIp}
@@ -113,7 +113,7 @@ func handleRequest(tgt *bleed.Target, w http.ResponseWriter, r *http.Request, sk
 func bleedHandler(w http.ResponseWriter, r *http.Request) {
 	host := r.URL.Path[len("/bleed/"):]
 
-	tgt := bleed.Target{
+	tgt := heartbleed.Target{
 		HostIp:  string(host),
 		Service: "https",
 	}
@@ -132,7 +132,7 @@ func bleedQueryHandler(w http.ResponseWriter, r *http.Request) {
 		s = true
 	}
 
-	tgt := bleed.Target{
+	tgt := heartbleed.Target{
 		HostIp:  string(q[0]),
 		Service: "https",
 	}
@@ -175,7 +175,7 @@ func main() {
 	}
 
 	if withCache {
-		cache.Init(arguments["--expiry"].(string))
+		hbcache.Init(arguments["--expiry"].(string))
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -190,7 +190,6 @@ func main() {
 	http.HandleFunc("/bleed/", bleedHandler)
 	http.HandleFunc("/bleed/query", bleedQueryHandler)
 
-	var err error
 	if arguments["--key"] != nil && arguments["--cert"] != nil {
 		log.Printf("Starting server on %s\n", arguments["--listen"].(string))
 		log.Fatal("ListenAndServe: ", http.ListenAndServe(
