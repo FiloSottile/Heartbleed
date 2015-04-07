@@ -3,7 +3,7 @@ Heartbleed
 
 A checker (site and tool) for CVE-2014-0160.
 
-Public site at http://filippo.io/Heartbleed/
+Public site at https://filippo.io/Heartbleed/
 
 Tool usage:
 
@@ -16,14 +16,12 @@ Exit codes: `0` - SAFE; `1` - VULNERABLE; `2` - ERROR. (*recently changed*)
 
 See the [online FAQ](http://filippo.io/Heartbleed/faq.html) for an explanation of error messages including `TIMEOUT` and `BROKEN PIPE`.
 
-Please note that the code is a bit of a mess, not exactly release-ready.
-
 If a service name is specified besides `https`, the tool checks the specified service using STARTTLS.
 **You do still need to specify the correct port.**
 
 ## Install
 
-You will need Go 1.2.x, otherwise you'll get `undefined: cipher.AEAD` and other errors
+You will need Go >= 1.2, otherwise you'll get `undefined: cipher.AEAD` and other errors
 
 ```
 go get github.com/FiloSottile/Heartbleed

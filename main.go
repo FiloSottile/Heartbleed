@@ -27,18 +27,25 @@ func usage() {
 }
 
 func main() {
-	var tgt heartbleed.Target
-
-	flag.StringVar(&tgt.Service, "service", "https", fmt.Sprintf("Specify a service name to test (using STARTTLS if necessary). \n\t\tBesides HTTPS, currently supported services are: \n\t\t%s", heartbleed.Services))
-	check_cert := flag.Bool("check-cert", false, "check the server certificate")
+	var (
+		service = flag.String("service", "https", fmt.Sprintf(
+			`Specify a service name to test (using STARTTLS if necessary).
+		Besides HTTPS, currently supported services are:
+		%s`, heartbleed.Services))
+		check_cert = flag.Bool("check-cert", false, "check the server certificate")
+	)
 	flag.Parse()
 
 	if flag.NArg() < 1 {
 		usage()
 	}
 
-	tgt.HostIp = flag.Arg(0)
+	tgt := &heartbleed.Target{
+		Service: *service,
+		HostIp:  flag.Arg(0),
+	}
 
+	// Parse the host out of URLs
 	u, err := url.Parse(tgt.HostIp)
 	if err == nil && u.Host != "" {
 		tgt.HostIp = u.Host
@@ -47,7 +54,8 @@ func main() {
 		}
 	}
 
-	out, err := heartbleed.Heartbleed(&tgt, []byte("heartbleed.filippo.io"), !(*check_cert))
+	out, err := heartbleed.Heartbleed(tgt,
+		[]byte("github.com/FiloSottile/Heartbleed"), !(*check_cert))
 	if err == heartbleed.Safe {
 		log.Printf("%v - SAFE", tgt.HostIp)
 		os.Exit(0)

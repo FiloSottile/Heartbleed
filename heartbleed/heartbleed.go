@@ -5,6 +5,7 @@ import (
 	_ "crypto/sha256"
 	_ "crypto/sha512"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"io"
 	"net"
@@ -13,7 +14,6 @@ import (
 	"time"
 
 	"github.com/FiloSottile/Heartbleed/heartbleed/tls"
-	"github.com/davecgh/go-spew/spew"
 )
 
 type Target struct {
@@ -128,7 +128,7 @@ func Heartbleed(tgt *Target, payload []byte, skipVerify bool) (string, error) {
 
 	select {
 	case data := <-conn.Heartbeats:
-		out := spew.Sdump(data)
+		out := hex.Dump(data)
 		if bytes.Index(data, padding) == -1 {
 			return "", Safe
 		}
