@@ -1,0 +1,44 @@
+{
+    "extends":[],
+    "services": {
+        "default_settings":{
+            "params":{
+                "access_key_id":"xxx",
+                "secret_access_key":"xxx",
+                "use_sys_log":true
+            }
+        },
+        "dynamo_db": {
+            // Your dynamo hostname.
+            "host":"dynamodb.us-east-1.amazonaws.com",
+            // Your zone.
+            "zone":"us-east-1",
+            // The scheme/port can be changed to https/443.
+            "scheme":"http",
+            "port":80,
+	    // If set to true, programs that are written with godynamo may
+	    // opt to launch the keepalive goroutine to keep conns open.
+            "keepalive":true,
+            "iam": {
+                // Set to true to use IAM authentication.
+                "use_iam":true,
+                // The role provider is described in the goawsroles package.
+                // See: https://github.com/smugmug/goawsroles/
+                // Currently the only support is for the "file" provider, whereby
+                // roles data is written to local files.
+                "role_provider":"file",
+                // The identifier (filename, etc) for the IAM Access Key
+                "access_key":"role_access_key",
+                // The identifier (filename, etc) for the IAM Secret Key
+                "secret_key":"role_secret_key",
+                // The identifier (filename, etc) for the IAM Token
+                "token":"role_token",
+                // If using the "file" role provider, the base dir to read IAM files.
+                "base_dir":"/dir/where/you/update/role_files",
+                // Set to true if you would like the roles resource watched for changes
+                // and automatically (and atomically) updated.
+                "watch":true
+            }
+        }
+    }
+}
