@@ -191,16 +191,16 @@ func main() {
 	http.HandleFunc("/bleed/query", bleedQueryHandler)
 
 	if arguments["--key"] != nil && arguments["--cert"] != nil {
-		log.Printf("Starting server on %s\n", arguments["--listen"].(string))
-		log.Fatal("ListenAndServe: ", http.ListenAndServe(
-			arguments["--listen"].(string), nil,
-		))
-	} else {
 		log.Printf("Starting TLS server on %s\n", arguments["--listen"].(string))
 		log.Fatal("ListenAndServeTLS: ", http.ListenAndServeTLS(
 			arguments["--listen"].(string),
 			arguments["--cert"].(string), arguments["--key"].(string),
 			nil,
+		))
+	} else {
+		log.Printf("Starting server on %s\n", arguments["--listen"].(string))
+		log.Fatal("ListenAndServe: ", http.ListenAndServe(
+			arguments["--listen"].(string), nil,
 		))
 	}
 }
