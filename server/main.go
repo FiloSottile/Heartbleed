@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/FiloSottile/Heartbleed/server/_third_party/github.com/docopt/docopt-go"
 
@@ -178,9 +179,9 @@ func main() {
 		hbcache.Init(arguments["--expiry"].(string))
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, arguments["--redir-host"].(string), http.StatusFound)
-	})
+	http.Handle("/", http.RedirectHandler(
+		arguments["--redir-host"].(string), http.StatusFound,
+	))
 
 	// Required for some ELBs
 	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
@@ -190,17 +191,18 @@ func main() {
 	http.HandleFunc("/bleed/", bleedHandler)
 	http.HandleFunc("/bleed/query", bleedQueryHandler)
 
+	s := &http.Server{
+		Addr:        arguments["--listen"].(string),
+		ReadTimeout: 10 * time.Second,
+	}
+
 	if arguments["--key"] != nil && arguments["--cert"] != nil {
-		log.Printf("Starting TLS server on %s\n", arguments["--listen"].(string))
-		log.Fatal("ListenAndServeTLS: ", http.ListenAndServeTLS(
-			arguments["--listen"].(string),
+		log.Printf("Starting TLS server on %s\n", s.Addr)
+		log.Fatal("ListenAndServeTLS: ", s.ListenAndServeTLS(
 			arguments["--cert"].(string), arguments["--key"].(string),
-			nil,
 		))
 	} else {
-		log.Printf("Starting server on %s\n", arguments["--listen"].(string))
-		log.Fatal("ListenAndServe: ", http.ListenAndServe(
-			arguments["--listen"].(string), nil,
-		))
+		log.Printf("Starting server on %s\n", s.Addr)
+		log.Fatal("ListenAndServe: ", s.ListenAndServe())
 	}
 }
