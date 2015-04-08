@@ -4,14 +4,20 @@
   tasks:
   - apt: pkg=daemontools update_cache=yes cache_valid_time=3600
   - apt: pkg=daemontools-run update_cache=yes cache_valid_time=3600
-  - file: path=/etc/service/bleed state=directory
-  - file: path=/etc/service/bleed/supervise/ state=directory
-  - copy: src=run.sh dest=/etc/service/bleed/run mode=0755
-  - copy: src=HBserver dest=/home/ubuntu/HBserver
+  - apt: pkg=iptables-persistent update_cache=yes cache_valid_time=3600
+
+  - file: path=/var/service/bleed/log/ state=directory mode=0755
+  - copy: src=run.sh dest=/var/service/bleed/run mode=0755
+  - copy: src=log.sh dest=/var/service/bleed/log/run mode=0755
+
+  - copy: src=HBserver dest=/home/ubuntu/HBserver mode=0755
   - copy: src=aws-config.json dest=/etc/aws-config.json
+
+  - command: iptables -t nat -F
+  - command: iptables -t nat -A PREROUTING -i eth0 -p tcp \
+                 --dport 80 -j REDIRECT --to-port 8080
+  - command: invoke-rc.d iptables-persistent save
+
   - service: name=svscan state=started
-  - command: pkill -f heartbleed
-    ignore_errors: yes
-  - command: pkill -f HBserver
-    ignore_errors: yes
-  - command: svc -u /etc/service/bleed
+  - svc: name=bleed state=restarted enabled=yes
+         service_dir=/etc/service/ service_src=/var/service/
