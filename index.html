@@ -278,6 +278,7 @@ $( "form" ).submit(function( event ) {
   var host = $( "input:first" ).val();
     $(".bleed").hide()
     NProgress.start();
+    _paq.push(['trackEvent', 'Heartbleed', 'Launch', host]);
     get = {u: host};
     // if ($('#ignore-cert').is(':checked')) {
         get.skip = 1
@@ -291,8 +292,10 @@ $( "form" ).submit(function( event ) {
         if (data.code == 0){
             $('#data').text(data.data);
             $(".bleed-vuln").show()
+            _paq.push(['trackEvent', 'Heartbleed', 'Result-Vulnerable', data.host]);
         } else if (data.code == 1) {
             $(".bleed-safe").show()
+            _paq.push(['trackEvent', 'Heartbleed', 'Result-Safe', data.host]);
         } else {
             $('#error').text(data.error);
             if (data.error.startsWith("x509")) {
@@ -303,6 +306,8 @@ $( "form" ).submit(function( event ) {
                 $('.cert').hide()
             }
             $(".bleed-error").show()
+            _paq.push(['trackEvent', 'Heartbleed', 'Result-Error', data.host]);
+            _paq.push(['trackEvent', 'Heartbleed', 'Error', data.error]);
         }
         if (!pitch) {
             pitch = 1;
